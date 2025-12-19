@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dahuang.logistics.mapper.UserMapper">
+
+    <insert id="insert" parameterType="com.dahuang.logistics.entity.User">
+        insert into school_backend_manage.user (user_no, password, username, role, phone, email,gender,create_time)
+        values (#{userNo}, #{password}, #{username}, #{role}, #{phone}, #{email}, #{gender} , #{createTime})
+    </insert>
+
+    <update id="updateUser" parameterType="com.dahuang.logistics.dto.UpdateDTO">
+        UPDATE school_backend_manage.user
+        SET
+        <if test="password != null and password != ''">password = #{password},</if>
+        <if test="username != null and username != ''">username = #{username},</if>
+        <if test="phone != null and phone != ''">phone = #{phone},</if>
+        <if test="email != null and email != ''">email = #{email}</if>
+        WHERE user_no = #{userNo}
+    </update>
+</mapper>
