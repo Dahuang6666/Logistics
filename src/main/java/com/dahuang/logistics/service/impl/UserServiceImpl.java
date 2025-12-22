@@ -7,8 +7,11 @@ import com.dahuang.logistics.entity.User;
 import com.dahuang.logistics.mapper.UserMapper;
 import com.dahuang.logistics.service.UserService;
 import com.dahuang.logistics.utils.PasswordUtils;
+import com.dahuang.logistics.utils.RandomNumber;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,10 +22,13 @@ import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
-
+    private static final String subject="修改密码一次性代码";
     @Autowired
     private UserMapper userMapper;
-
+    @Autowired
+    private RandomNumber randomNumber;
+    @Autowired
+    private JavaMailSender mailSender;
 
     //注册
     @Override
@@ -117,6 +123,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean getStatus(String userNo) {
         return userMapper.getStatus(userNo) == null || userMapper.getStatus(userNo) == 0;
+    }
+
+    @Override
+    public String sendSimpleEmail(String userNo) {
+        String to = userMapper.getEmail(userNo); // 查找邮箱
+        String randomCode = randomNumber.generateRandomCode();  // 生成六位随机数
+        String text = "您的验证码是：" + randomCode;  // 将验证码作为邮件内容
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("dahuang1123@qq.com"); // 发件人
+        message.setTo(to);                       // 收件人
+        message.setSubject(subject);             // 邮件主题
+        message.setText(text);                   // 邮件正文
+        mailSender.send(message);
+        return randomCode; // 返回生成的验证码
     }
 
 }

@@ -1,13 +1,14 @@
 package com.dahuang.logistics.controller;
 import com.dahuang.logistics.dto.LoginDTO;
 import com.dahuang.logistics.dto.RegisterDTO;
-import com.dahuang.logistics.dto.RepairApplicationDTO;
 import com.dahuang.logistics.dto.UpdateDTO;
 import com.dahuang.logistics.entity.Result;
 import com.dahuang.logistics.entity.User;
+import com.dahuang.logistics.entity.VerifyRequest;
 import com.dahuang.logistics.service.UserService;
 import com.dahuang.logistics.utils.PasswordUtils;
 import com.google.code.kaptcha.Producer;
+import com.google.code.kaptcha.impl.DefaultKaptcha;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,11 +27,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @CrossOrigin(origins = "*")
 @RequestMapping("/school/user")
 public class UserController {
+    // 临时存储验证码和用户名
+    private final Map<String, String> verificationCodes = new HashMap<>();
+    //存储图片验证码
+    private final Map<String, String> captchaStorage = new ConcurrentHashMap<>();
     @Autowired
     private UserService userService;
     @Autowired
-    private Producer captchaProducer;
-    private final Map<String, String> captchaStorage = new ConcurrentHashMap<>();
+    private DefaultKaptcha captchaProducer;
+
     //注册
     @PostMapping("/register")
     public Result register(@RequestBody RegisterDTO registerDTO) {
@@ -58,7 +64,6 @@ public class UserController {
         }
         return Result.error("账号或密码错误");
     }
-
 
     //修改
     @PutMapping("/updateUserInfo")
@@ -97,6 +102,8 @@ public class UserController {
             return Result.error("头像上传失败");
         }
     }
+
+
     @GetMapping("/getUserInfo")
     public Result getUserInfo(@RequestParam("userNo") String userNo) {
         User user = userService.getUserInfoByUserNo(userNo);
@@ -132,24 +139,51 @@ public class UserController {
 
     // 验证验证码
     @PostMapping("/verifyCaptcha")
-    public Map<String, Object> verifyCaptcha(@RequestBody Map<String, String> request) {
+    public Result  verifyCaptcha(@RequestBody Map<String, String> request) {
         String captchaId = request.get("captchaId");
         String userInput = request.get("captchaInput");
-
         // 从临时变量中取出验证码
         String correctCaptcha = captchaStorage.get(captchaId);
-
-        Map<String, Object> response = Map.of("success", false); // 默认失败
-
         if (correctCaptcha != null && correctCaptcha.equalsIgnoreCase(userInput)) {
-            response = Map.of("success", true);
             // 验证成功后，移除验证码
             captchaStorage.remove(captchaId);
+            return Result.success();
         } else {
-            response = Map.of("success", false, "message", "验证码错误或已失效");
+           return Result.error("验证码错误");
         }
-        return response;
     }
+   // 邮箱发送验证码
+    @GetMapping("/sendEmail")
+    public Result sendEmail(@RequestParam String userNo) {
+        try {
+            String code = userService.sendSimpleEmail(userNo);
+            // 将验证码和用户名存储到 Map 中
+            verificationCodes.put(userNo, code);
+            return Result.success("True");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.success("False");
+        }
+    }
+    // 验证邮箱验证码
+    @PostMapping("/verify")
+    public Result verifyCode(@RequestBody VerifyRequest request) {
+        String userNo = request.getUserNo();
+        String code = request.getCode();
 
-
+        // 从 Map 中获取存储的验证码
+        String storedCode = verificationCodes.get(userNo);
+        if (storedCode == null) {
+            return Result.error("验证码错误或未发送");
+        }
+        // 比较验证码
+        if (storedCode.equals(code)) {
+            // 验证成功，删除存储的验证码
+            verificationCodes.remove(userNo);
+            return Result.success("True");
+        } else {
+            return Result.error("False");
+        }
+    }
 }
+

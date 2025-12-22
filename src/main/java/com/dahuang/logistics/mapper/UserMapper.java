@@ -26,4 +26,7 @@ public interface UserMapper {
     User getUserByUserNo(String userNo);
     @Select("select status from school_backend_manage.user where user_no=#{userNo}")
     Integer getStatus(String userNo);
+
+    @Select("select email from user where user_no=#{userNo}")
+    String getEmail(String userNo);
 }

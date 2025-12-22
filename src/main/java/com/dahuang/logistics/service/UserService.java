@@ -24,6 +24,8 @@ public interface UserService {
     User getUserInfoByUserNo(String userNo);
 
     boolean getStatus(String userNo);
+
+    String sendSimpleEmail(String userNo);
 }
 
 
