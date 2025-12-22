@@ -88,7 +88,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { ref, computed, onUnmounted } from 'vue'
 
 // 原始级联数据
