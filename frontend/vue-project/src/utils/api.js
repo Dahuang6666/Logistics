@@ -33,6 +33,19 @@ export function verifyCaptcha(data) {
   return request.post('/school/user/verifyCaptcha' , data);
 }
 
+
+/**
+ * 获取邮箱
+ * @param {string} userNo - 用户账号
+ */
+export function getEmail(userNo) {
+  return request.get('/school/user/getEmail', {
+    params: {
+      userNo: userNo
+    }
+  });
+}
+
 /**
  * 发送邮件验证码
  * @param {string} userNo - 用户账号
