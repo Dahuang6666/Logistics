@@ -144,7 +144,7 @@ export default {
     this.refreshCaptcha()
   },
   methods: {
-    // ===== 登录相关（保持不变）=====
+
     async refreshCaptcha() {
       try {
         const response = await getCaptcha()
@@ -160,17 +160,15 @@ export default {
         ElMessage.error('请输入验证码')
         return false
       }
-      try {
         const response = await verifyCaptcha({
           captchaId: this.loginData.captchaId,
           captchaInput: this.loginData.captchaInput
         })
-        return response.code === 200
-      } catch (error) {
-        ElMessage.error('验证码错误，请重新输入')
-        this.refreshCaptcha()
-        return false
-      }
+        if (response.data.code === 0) {
+          ElMessage.error('验证码错误，请重新输入')
+          return false
+        }
+        return true
     },
     async handleLogin() {
       if (!this.loginData.userNo.trim() || !this.loginData.password.trim()) {
@@ -181,16 +179,18 @@ export default {
         ElMessage.error('请选择角色')
         return
       }
-      const captchaValid = await this.checkCaptcha()
-      if (!captchaValid) return
-
-      try {
-        const response = await login(this.loginData)
-        ElMessage.success('登录成功！')
-        console.log('登录用户:', this.loginData.userNo)
-      } catch (error) {
-        ElMessage.error('登录失败，请检查账号密码或网络')
-        await this.refreshCaptcha()
+      const a = await this.checkCaptcha()
+      if(a){
+        try {
+          const response = await login(this.loginData)
+          if (response.data.code === 1) {
+            ElMessage.success('登录成功！')
+            console.log('登录用户:', this.loginData.userNo)
+          }
+        } catch (error) {
+          ElMessage.error('登录失败，请检查账号密码或网络')
+          await this.refreshCaptcha()
+        }
       }
     },
     handleRegister() {
@@ -296,8 +296,8 @@ html, body, #app {
   max-width: 400px;
   perspective: 1200px;
   position: relative;
-  height: auto;
-  transform-style: preserve-3d; /* 添加此行 */
+  height: 520px;
+  transform-style: preserve-3d;
 }
 
 .form-panel {
@@ -362,17 +362,24 @@ html, body, #app {
   border: 1px solid #e4e7ed;
 }
 
+.forgot-password {
+  position: absolute;
+  bottom: 20px;    /* 距离底部 20px */
+  right: 20px;     /* 距离右侧 20px */
+  margin: 0;       /* 清除可能的默认 margin */
+}
+
 .forgot-password a {
   font-size: 12px;
   color: #409eff;
   text-decoration: none;
   cursor: pointer;
 }
+
 .forgot-password a:hover {
   color: #66b1ff;
   text-decoration: underline;
 }
-
 .role-container {
   position: relative;
   height: 40px;
