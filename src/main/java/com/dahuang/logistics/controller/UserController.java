@@ -161,12 +161,11 @@ public class UserController {
             verificationCodes.put(userNo, code);
             return Result.success("True");
         } catch (Exception e) {
-            e.printStackTrace();
             return Result.success("False");
         }
     }
     //获取邮箱
-    @GetMapping("getEmail")
+    @GetMapping("/getEmail")
     public Result getEmail(@RequestParam("userNo") String userNo) {
          String email=userService.getEmail(userNo);
          if (email != null) {
