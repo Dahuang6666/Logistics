@@ -1,63 +1,128 @@
 <template>
   <div class="login-container">
-    <el-form
-      ref="loginFormRef"
-      :model="loginData"
-      class="login-form"
-      @submit.prevent="handleLogin"
-    >
-      <h2>用户登录</h2>
-      <el-form-item>
-        <el-input v-model="loginData.userNo" placeholder="请输入学号或工号" clearable />
-      </el-form-item>
-      <el-form-item>
-        <el-input v-model="loginData.password" type="password" placeholder="请输入密码" show-password clearable />
-      </el-form-item>
-      <!-- 新增：验证码模块 -->
-      <el-form-item>
-        <div class="captcha-container">
-          <!-- 验证码输入框 -->
-          <el-input
-            v-model="loginData.captchaInput"
-            placeholder="请输入验证码"
-            clearable
-            class="captcha-input"
-          />
-          <!-- 其他代码不变，只改验证码图片区域 -->
-          <div class="captcha-img-box" @click="refreshCaptcha">
-            <!-- 修复：确保前缀拼接正确，去掉多余空格 -->
-            <img
-              v-if="captchaImage" :src="this.captchaImage"  alt="验证码" class="captcha-img"
+    <!-- 3D 翻转容器 -->
+    <div class="flip-box" :class="{ flipped: isFlipped }">
+      <!-- 正面：登录表单 -->
+      <div class="form-panel login-panel">
+        <el-form
+          ref="loginFormRef"
+          :model="loginData"
+          class="login-form"
+          @submit.prevent="handleLogin"
+        >
+          <h2>用户登录</h2>
+          <el-form-item>
+            <el-input v-model="loginData.userNo" placeholder="请输入学号或工号" clearable />
+          </el-form-item>
+          <el-form-item>
+            <el-input
+              v-model="loginData.password"
+              type="password"
+              placeholder="请输入密码"
+              show-password
+              clearable
             />
-            <div v-else class="captcha-loading">加载中...</div>
+          </el-form-item>
+          <el-form-item>
+            <div class="captcha-container">
+              <el-input
+                v-model="loginData.captchaInput"
+                placeholder="请输入验证码"
+                clearable
+                class="captcha-input"
+              />
+              <div class="captcha-img-box" @click="refreshCaptcha">
+                <img
+                  v-if="captchaImage"
+                  :src="captchaImage"
+                  alt="验证码"
+                  class="captcha-img"
+                />
+                <div v-else class="captcha-loading">加载中...</div>
+              </div>
+            </div>
+          </el-form-item>
+          <div class="role-container">
+            <el-radio v-model="loginData.role" :label="1" class="role-left">用户</el-radio>
+            <el-radio v-model="loginData.role" :label="4" class="role-right">管理员</el-radio>
           </div>
-        </div>
-      </el-form-item>
-      <div class="role-container">
-        <el-radio v-model="loginData.role" :label="1" class="role-left">用户</el-radio>
-        <el-radio v-model="loginData.role" :label="4" class="role-right">管理员</el-radio>
+          <el-form-item class="btn-group">
+            <el-button type="default" @click="handleRegister">注册</el-button>
+            <el-button type="primary" native-type="submit">登录</el-button>
+          </el-form-item>
+          <div class="forgot-password">
+            <a @click="flipToForget">忘记密码？</a>
+          </div>
+        </el-form>
       </div>
-      <el-form-item class="btn-group">
-        <el-button type="default" native-type="button" @click="handleRegister">注册</el-button>
-        <el-button type="primary" native-type="submit">登录</el-button>
-      </el-form-item>
-      <div class="forgot-password">
-        <a @click="handleForgotPassword">忘记密码？</a>
+
+      <!-- 反面：找回密码表单 -->
+      <div class="form-panel forget-panel">
+        <el-form
+          ref="forgetFormRef"
+          :model="forgetData"
+          class="login-form"
+          @submit.prevent="handleConfirmReset"
+        >
+          <h2>找回密码</h2>
+          <el-form-item>
+            <el-input
+              v-model="forgetData.userNo"
+              placeholder="请输入学号或工号"
+              clearable
+            />
+          </el-form-item>
+          <!-- 邮箱验证码行 -->
+          <el-form-item>
+            <div class="email-captcha-row">
+              <el-input
+                v-model="forgetData.emailCode"
+                placeholder="请输入邮箱验证码"
+                clearable
+                class="email-code-input"
+              />
+              <el-button
+                type="primary"
+                @click="handleGetEmailCode"
+                :loading="sending"
+                class="send-code-btn"
+              >
+                获取邮箱验证码
+              </el-button>
+            </div>
+          </el-form-item>
+          <!-- 新密码输入 -->
+          <el-form-item>
+            <el-input
+              v-model="forgetData.newPassword"
+              type="password"
+              placeholder="请输入新密码"
+              show-password
+              clearable
+            />
+          </el-form-item>
+          <el-form-item class="btn-group">
+            <el-button type="default" @click="flipToLogin">返回登录</el-button>
+            <el-button type="primary" native-type="submit">确认修改</el-button>
+          </el-form-item>
+        </el-form>
       </div>
-    </el-form>
+    </div>
   </div>
 </template>
 
 <script>
-import { ElMessage } from 'element-plus'
-import { login } from '@/utils/api.js'
-// 导入验证码接口
-import { getCaptcha, verifyCaptcha } from '@/utils/api.js' // 确保接口路径正确
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { login, getCaptcha, verifyCaptcha } from '@/utils/api.js'
+// 新增导入
+import { getEmail, sendEmail } from '@/utils/api.js'
 
 export default {
   name: 'LoginView',
   data() {
     return {
+      isFlipped: false,
+      // 登录数据
       loginData: {
         userNo: '',
         password: '',
@@ -65,40 +130,41 @@ export default {
         captchaInput: '',
         captchaId: ''
       },
-      captchaImage: ''
+      captchaImage: '',
+      // 找回密码数据
+      forgetData: {
+        userNo: '',
+        emailCode: '',
+        newPassword: ''
+      },
+      sending: false // 发送中状态
     }
   },
   mounted() {
-    // 页面加载时自动获取验证码
     this.refreshCaptcha()
   },
   methods: {
-    // 获取/刷新验证码
+    // ===== 登录相关（保持不变）=====
     async refreshCaptcha() {
       try {
         const response = await getCaptcha()
-        console.log("response", response)
-        this.captchaImage = `data:image/png;base64,${response.data.captcha}`;
-        this.loginData.captchaId = response.data.captchaId // 保存验证码ID
+        this.captchaImage = `data:image/png;base64,${response.data.captcha}`
+        this.loginData.captchaId = response.data.captchaId
         this.loginData.captchaInput = ''
       } catch (error) {
         ElMessage.error('验证码加载失败，请刷新重试')
-        console.error('验证码获取失败:', error)
       }
     },
-    // 验证验证码
     async checkCaptcha() {
       if (!this.loginData.captchaInput.trim()) {
         ElMessage.error('请输入验证码')
         return false
       }
       try {
-        // 调用验证接口
         const response = await verifyCaptcha({
           captchaId: this.loginData.captchaId,
           captchaInput: this.loginData.captchaInput
         })
-        // 验证成功返回true
         return response.code === 200
       } catch (error) {
         ElMessage.error('验证码错误，请重新输入')
@@ -106,63 +172,107 @@ export default {
         return false
       }
     },
-    // 登录逻辑（整合验证码验证）
     async handleLogin() {
-      // 1. 基础信息校验
       if (!this.loginData.userNo.trim() || !this.loginData.password.trim()) {
-        ElMessage({
-          message: '用户名和密码不能为空',
-          type: 'error',
-          duration: 3000
-        })
+        ElMessage.error('用户名和密码不能为空')
         return
       }
       if (this.loginData.role === 0) {
-        ElMessage({
-          message: '请选择角色',
-          type: 'error',
-          duration: 3000
-        })
+        ElMessage.error('请选择角色')
         return
       }
-      // 2. 验证码验证
       const captchaValid = await this.checkCaptcha()
-      if (!captchaValid) {
-        return
-      }
-      // 3. 执行登录
+      if (!captchaValid) return
+
       try {
         const response = await login(this.loginData)
-        console.log(response.data)
         ElMessage.success('登录成功！')
         console.log('登录用户:', this.loginData.userNo)
       } catch (error) {
         ElMessage.error('登录失败，请检查账号密码或网络')
-        console.error('登录失败:', error)
-        // 登录失败刷新验证码
         await this.refreshCaptcha()
       }
     },
-    async handleRegister() {
+    handleRegister() {
       this.$router.push({ name: 'register' })
     },
-    handleForgotPassword() {
 
+    // ===== 翻转控制 =====
+    flipToForget() {
+      this.isFlipped = true
+    },
+    flipToLogin() {
+      this.isFlipped = false
+    },
+
+    // ===== 新增：获取邮箱验证码流程 =====
+    async handleGetEmailCode() {
+      const { userNo } = this.forgetData
+      if (!userNo?.trim()) {
+        ElMessage.warning('请先输入学号或工号')
+        return
+      }
+
+      try {
+        // 1. 获取邮箱
+        const emailRes = await getEmail(userNo)
+        const email = emailRes.data.data
+
+        if (!email || email === '未找到邮箱请联系管理员') {
+          ElMessage.error('未绑定邮箱，请联系管理员')
+          return
+        }
+
+        // 2. 弹出确认框
+        await ElMessageBox.confirm(
+          `系统将向以下邮箱发送验证码：<br/><strong>${email}</strong>`,
+          '确认邮箱',
+          {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: '确定',
+            cancelButtonText: '不是这个邮箱',
+            type: 'info'
+          }
+        )
+
+        // 3. 用户点“确定” → 发送验证码
+        this.sending = true
+        const sendRes = await sendEmail(userNo)
+        if (sendRes.data.data === 'True') {
+          ElMessage.success('验证码已发送，请查收邮箱')
+        } else {
+          ElMessage.error('发送失败，请稍后重试')
+        }
+      } catch (err) {
+        // 用户点击“取消” 或 接口错误
+        if (err === 'cancel') {
+          ElMessage.info('请联系管理员更新您的邮箱信息')
+        } else {
+          ElMessage.error('操作失败，请重试')
+          console.error(err)
+        }
+      } finally {
+        this.sending = false
+      }
+    },
+
+    // 暂时不做真实重置，只提示
+    handleConfirmReset() {
+      ElMessage.info('密码重置功能待开发')
+      // 后续可调用 verifyEmail + updatePassword
     }
   }
 }
 </script>
 
 <style scoped>
+/* ========== 全局样式保持不变 ========== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
-html,
-body,
-#app {
+html, body, #app {
   height: 100%;
 }
 
@@ -180,15 +290,51 @@ body,
   padding: 20px;
 }
 
+/* ========== 3D 翻转核心 ========== */
+.flip-box {
+  width: 100%;
+  max-width: 400px;
+  perspective: 1200px;
+  position: relative;
+  height: auto;
+  transform-style: preserve-3d; /* 添加此行 */
+}
+
+.form-panel {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden; /* 确保这个属性存在 */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.login-panel {
+  transform: rotateY(0deg);
+  pointer-events: auto;
+}
+.forget-panel {
+  transform: rotateY(180deg);
+  pointer-events: none;
+}
+.flip-box.flipped .login-panel {
+  transform: rotateY(-180deg); /* 修改这里 */
+  pointer-events: none;
+}
+.flip-box.flipped .forget-panel {
+  transform: rotateY(0deg); /* 修改这里 */
+  pointer-events: auto;
+}
+/* ========== 表单通用 ========== */
 .login-form {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   width: 100%;
-  max-width: 400px;
   border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
@@ -197,6 +343,34 @@ body,
   margin-bottom: 1.5rem;
   color: #222;
   font-weight: 600;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 1rem;
+}
+.btn-group .el-button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 20px;
+}
+
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e4e7ed;
+}
+
+.forgot-password a {
+  font-size: 12px;
+  color: #409eff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.forgot-password a:hover {
+  color: #66b1ff;
+  text-decoration: underline;
 }
 
 .role-container {
@@ -208,122 +382,63 @@ body,
   align-items: center;
   margin: 1rem 0;
 }
-
 .role-left {
   position: absolute;
   left: 50%;
   transform: translateX(-120px);
 }
-
 .role-right {
   position: absolute;
   left: 50%;
   transform: translateX(60px);
 }
 
-.btn-group {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 1rem;
-}
-
-.btn-group .el-button--default {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 20px;
-  border: 1px solid #a8d8b9;
-  background: #f0fcf5;
-  color: #4cae60;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-.btn-group .el-button--default:hover {
-  background: #e0f8e8;
-  border-color: #86c997;
-}
-
-.btn-group .el-button--primary {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 20px;
-  background: #4cae60;
-  border: none;
-  color: white;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(76, 174, 96, 0.2);
-  transition: all 0.3s;
-}
-
-.btn-group .el-button--primary:hover {
-  background: #3da052;
-  box-shadow: 0 6px 16px rgba(76, 174, 96, 0.3);
-}
-
-:deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e4e7ed;
-}
-
-/* 忘记密码样式 */
-.forgot-password {
-  text-align: right;
-  margin-top: 10px;
-}
-
-.forgot-password a {
-  font-size: 12px;
-  color: #409eff;
-  text-decoration: none;
-}
-
-.forgot-password a:hover {
-  color: #66b1ff;
-  text-decoration: underline;
-}
-
-/* 核心：验证码容器样式（总长度和密码框一致） */
 .captcha-container {
   display: flex;
   width: 100%;
-  gap: 8px; /* 输入框和图片的间距 */
+  gap: 8px;
 }
-
-/* 验证码输入框：占2/3宽度 */
 .captcha-input {
   flex: 2;
 }
-
-/* 验证码图片区域：占1/3宽度 */
 .captcha-img-box {
   flex: 1;
-  height: 50px; /* 和输入框高度一致 */
+  height: 50px;
   border: 1px solid #e4e7ed;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer; /* 点击刷新 */
+  cursor: pointer;
   overflow: hidden;
 }
-
-/* 验证码图片样式 */
 .captcha-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
-/* 验证码加载中样式 */
 .captcha-loading {
   font-size: 12px;
   color: #999;
 }
-
-/* 鼠标悬停验证码图片时的提示 */
 .captcha-img-box:hover {
   border-color: #409eff;
+}
+
+/* ========== 新增：邮箱验证码行 ========== */
+.email-captcha-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.email-code-input {
+  flex: 1;
+}
+.send-code-btn {
+  width: auto;
+  min-width: 120px;
+  white-space: nowrap;
+  padding: 0 12px;
 }
 </style>
