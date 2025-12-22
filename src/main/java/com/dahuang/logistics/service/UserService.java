@@ -26,6 +26,8 @@ public interface UserService {
     boolean getStatus(String userNo);
 
     String sendSimpleEmail(String userNo);
+
+    String getEmail(String userNo);
 }
 
 

@@ -139,4 +139,9 @@ public class UserServiceImpl implements UserService {
         return randomCode; // 返回生成的验证码
     }
 
+    @Override
+    public String getEmail(String userNo) {
+       return  userMapper.getEmail(userNo);
+    }
+
 }

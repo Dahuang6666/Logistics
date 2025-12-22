@@ -140,14 +140,14 @@ export default {
         ElMessage.error('登录失败，请检查账号密码或网络')
         console.error('登录失败:', error)
         // 登录失败刷新验证码
-        this.refreshCaptcha()
+        await this.refreshCaptcha()
       }
     },
     async handleRegister() {
       this.$router.push({ name: 'register' })
     },
     handleForgotPassword() {
-      // 忘记密码逻辑
+
     }
   }
 }

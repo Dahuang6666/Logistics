@@ -165,8 +165,17 @@ public class UserController {
             return Result.success("False");
         }
     }
+    //获取邮箱
+    @GetMapping("getEmail")
+    public Result getEmail(@RequestParam("userNo") String userNo) {
+         String email=userService.getEmail(userNo);
+         if (email != null) {
+             return Result.success(email);
+         }
+         return Result.error("未找到邮箱请联系管理员");
+    }
     // 验证邮箱验证码
-    @PostMapping("/verify")
+    @PostMapping("/verifyEmail")
     public Result verifyCode(@RequestBody VerifyRequest request) {
         String userNo = request.getUserNo();
         String code = request.getCode();
