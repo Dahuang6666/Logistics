@@ -170,6 +170,9 @@ public class UserController {
     //获取邮箱
     @GetMapping("/getEmail")
     public Result getEmail(@RequestParam("userNo") String userNo) {
+        if(!userService.selectUserByUserNo(userNo)){
+            return Result.error("账号不存在");
+        }
          String email=userService.getEmail(userNo);
          if (email != null) {
              return Result.success(email);

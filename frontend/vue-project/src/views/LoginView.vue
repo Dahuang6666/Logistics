@@ -85,9 +85,10 @@
                 type="primary"
                 @click="handleGetEmailCode"
                 :loading="sending"
+                :disabled="countdown > 0"
                 class="send-code-btn"
               >
-                获取邮箱验证码
+                {{ countdown > 0 ? `${countdown}s 后重发` : '获取邮箱验证码' }}
               </el-button>
             </div>
           </el-form-item>
@@ -137,14 +138,15 @@ export default {
         emailCode: '',
         newPassword: ''
       },
-      sending: false // 发送中状态
+      sending: false,// 发送中状态
+      countdown: 0, // 倒计时秒数，0 表示未激活
+      countdownTimer: null // 定时器引用
     }
   },
   mounted() {
     this.refreshCaptcha()
   },
   methods: {
-
     async refreshCaptcha() {
       try {
         const response = await getCaptcha()
@@ -211,22 +213,24 @@ export default {
 
     // ===== 新增：获取邮箱验证码流程 =====
     async handleGetEmailCode() {
-      const { userNo } = this.forgetData
+      // 防止倒计时期间重复点击
+      if (this.countdown > 0) return;
+
+      const { userNo } = this.forgetData;
       if (!userNo?.trim()) {
-        ElMessage.warning('请先输入学号或工号')
-        return
+        ElMessage.warning('请先输入学号或工号');
+        return;
       }
 
       try {
         // 1. 获取邮箱
-        const emailRes = await getEmail(userNo)
-        const email = emailRes.data.data
-
-        if (!email || email === '未找到邮箱请联系管理员') {
-          ElMessage.error('未绑定邮箱，请联系管理员')
+        const emailRes = await getEmail(userNo);
+        const email = emailRes.data.data;
+        if(emailRes.data.code===0)
+        {
+          ElMessage.error(emailRes.data.msg)
           return
         }
-
         // 2. 弹出确认框
         await ElMessageBox.confirm(
           `系统将向以下邮箱发送验证码：<br/><strong>${email}</strong>`,
@@ -237,33 +241,41 @@ export default {
             cancelButtonText: '不是这个邮箱',
             type: 'info'
           }
-        )
+        );
+        this.startCountdown();
+        ElMessage.success('验证码已发送，请查收邮箱（含垃圾邮件箱）');
+        sendEmail(userNo).catch(err => {
+          console.warn('邮件发送异常（已忽略）:', err);
+        });
 
-        // 3. 用户点“确定” → 发送验证码
-        this.sending = true
-        const sendRes = await sendEmail(userNo)
-        if (sendRes.data.code === 1) {
-          ElMessage.success('验证码已发送，请查收邮箱')
-        } else {
-          ElMessage.error('发送失败，请稍后重试')
-        }
       } catch (err) {
-        // 用户点击“取消” 或 接口错误
         if (err === 'cancel') {
-          ElMessage.info('请联系管理员更新您的邮箱信息')
+          ElMessage.info('请联系管理员更新您的邮箱信息');
         } else {
-          ElMessage.error('操作失败，请重试')
-          console.error(err)
+          ElMessage.error('操作失败，请重试');
+          console.error(err);
         }
-      } finally {
-        this.sending = false
       }
+    },
+    startCountdown() {
+      this.countdown = 30; // 30秒倒计时
+
+      // 清除可能存在的旧定时器
+      if (this.countdownTimer) clearInterval(this.countdownTimer);
+
+      this.countdownTimer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          clearInterval(this.countdownTimer);
+          this.countdownTimer = null;
+        }
+      }, 1000);
     },
 
     // 暂时不做真实重置，只提示
     handleConfirmReset() {
       ElMessage.info('密码重置功能待开发')
-      // 后续可调用 verifyEmail + updatePassword
+
     }
   }
 }
