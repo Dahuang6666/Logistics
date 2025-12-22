@@ -166,6 +166,7 @@ export default {
         })
         if (response.data.code === 0) {
           ElMessage.error('验证码错误，请重新输入')
+          await this.refreshCaptcha()
           return false
         }
         return true
@@ -186,6 +187,9 @@ export default {
           if (response.data.code === 1) {
             ElMessage.success('登录成功！')
             console.log('登录用户:', this.loginData.userNo)
+          }
+          else{
+            ElMessage.error(response.data.msg)
           }
         } catch (error) {
           ElMessage.error('登录失败，请检查账号密码或网络')
@@ -238,7 +242,7 @@ export default {
         // 3. 用户点“确定” → 发送验证码
         this.sending = true
         const sendRes = await sendEmail(userNo)
-        if (sendRes.data.data === 'True') {
+        if (sendRes.data.code === 1) {
           ElMessage.success('验证码已发送，请查收邮箱')
         } else {
           ElMessage.error('发送失败，请稍后重试')

@@ -281,11 +281,11 @@ export default {
         ElMessage.info('正在提交注册信息，请稍候...')
 
         // 调用注册接口（真实接口）
-        // const response = await register(this.registerData)
+        const response = await register(this.registerData)
         // console.log('注册接口返回:', response.data)
 1
         // 第三步：根据接口返回结果提示不同信息
-        if (response.data.msg === "success") {
+        if (response.data.code === 1) {
           ElMessage.success('注册成功！即将跳转到登录页')
           setTimeout(() => {
             this.$router.push('/')

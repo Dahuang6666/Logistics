@@ -156,12 +156,15 @@ public class UserController {
     @GetMapping("/sendEmail")
     public Result sendEmail(@RequestParam String userNo) {
         try {
+            long start = System.currentTimeMillis();
             String code = userService.sendSimpleEmail(userNo);
+            System.out.println("发送耗时: " + (System.currentTimeMillis() - start) + "ms");
+            System.out.println("邮箱验证码：" + code);
             // 将验证码和用户名存储到 Map 中
             verificationCodes.put(userNo, code);
-            return Result.success("True");
+            return Result.success();
         } catch (Exception e) {
-            return Result.success("False");
+            return Result.error("邮件发送失败");
         }
     }
     //获取邮箱
