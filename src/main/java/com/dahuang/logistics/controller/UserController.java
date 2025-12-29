@@ -197,5 +197,16 @@ public class UserController {
             return Result.error("验证码错误");
         }
     }
+
+
+    //获取用户名
+    @GetMapping("/getUserName")
+    public Result getUserName(@RequestParam("userNo") String userNo) {
+        User user = userService.getUserInfoByUserNo(userNo);
+        if (user != null) {
+            return Result.success(user.getUsername());
+        }
+        return Result.error("用户名为空");
+    }
 }
 

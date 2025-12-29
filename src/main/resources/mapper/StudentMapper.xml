@@ -9,4 +9,28 @@
             (#{studentNo}, #{currentDormitoryId}, #{targetDormitoryId}, #{reason},
              #{applicationTime})
     </insert>
+
+    <select id="getAnnouncementList" resultType="com.dahuang.logistics.vo.AnnouncementVO">
+        SELECT
+            a.id,
+            a.title,
+            a.content,
+            a.publisher,
+            a.publish_time AS publishTime,
+            a.is_deleted AS isDeleted,
+            a.announcement_type_id AS announcementTypeId,
+            at.type_name AS announcementTypeName,
+            at.priority
+        FROM
+            school_backend_manage.announcement a
+                LEFT JOIN
+            school_backend_manage.announcement_type at
+        ON a.announcement_type_id = at.id
+        WHERE
+            a.is_deleted = 0
+        ORDER BY
+            at.priority DESC,
+            a.publish_time DESC
+            LIMIT #{offset}, #{limit}
+    </select>
 </mapper>

@@ -6,6 +6,7 @@ import com.dahuang.logistics.entity.ComplaintSuggestion;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.Result;
 import com.dahuang.logistics.service.StudentService;
+import com.dahuang.logistics.vo.AnnouncementVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +60,7 @@ public class StudentController {
     @GetMapping("/announcementList")
     public Result getAnnouncementList(@RequestParam(defaultValue = "1") int pageNum,
                                       @RequestParam(defaultValue = "10") int pageSize) {
-        List<Announcement> list = studentService.getAnnouncementList(pageNum, pageSize);
+        List<AnnouncementVO> list = studentService.getAnnouncementList(pageNum, pageSize);
         int total =  studentService.getAnnouncementCount();
 
         Map<String, Object> result = new HashMap<>();

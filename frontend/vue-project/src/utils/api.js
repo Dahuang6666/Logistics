@@ -79,3 +79,32 @@ export function updatePassword(userNo, password) {
     userNo, password
   });
 }
+
+/**
+ * 获取公告列表
+ * @param {number} pageNum - 页码
+ * @param {number} pageSize - 每页数量
+ * @returns {Promise}
+ */
+export function getAnnouncementList(pageNum, pageSize) {
+  return request.get('/school/student/announcementList', {
+    params: {
+      pageNum: pageNum || 1,
+      pageSize: pageSize || 10
+    }
+  });
+}
+
+
+
+/**
+ * 获取用户名
+ *@Param {String} userNo
+ */
+export function getUserName(userNo) {
+  return request.get('/school/user/getUserName', {
+    params: {
+      userNo: userNo
+    }
+  });
+}
