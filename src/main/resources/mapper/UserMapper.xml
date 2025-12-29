@@ -9,11 +9,12 @@
 
     <update id="updateUser" parameterType="com.dahuang.logistics.dto.UpdateDTO">
         UPDATE school_backend_manage.user
-        SET
-        <if test="password != null and password != ''">password = #{password},</if>
-        <if test="username != null and username != ''">username = #{username},</if>
-        <if test="phone != null and phone != ''">phone = #{phone},</if>
-        <if test="email != null and email != ''">email = #{email}</if>
+        <set>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="email != null and email != ''">email = #{email},</if>
+        </set>
         WHERE user_no = #{userNo}
     </update>
 </mapper>

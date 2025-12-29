@@ -7,7 +7,6 @@ import com.dahuang.logistics.entity.User;
 import com.dahuang.logistics.entity.VerifyRequest;
 import com.dahuang.logistics.service.UserService;
 import com.dahuang.logistics.utils.PasswordUtils;
-import com.google.code.kaptcha.Producer;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +97,6 @@ public class UserController {
             String avatarUrl = userService.uploadAvatar(userNo, file);
             return Result.success(avatarUrl); // 返回头像地址
         } catch (Exception e) {
-            e.printStackTrace();
             return Result.error("头像上传失败");
         }
     }
@@ -188,15 +186,15 @@ public class UserController {
         // 从 Map 中获取存储的验证码
         String storedCode = verificationCodes.get(userNo);
         if (storedCode == null) {
-            return Result.error("验证码错误或未发送");
+            return Result.error("验证码未发送");
         }
         // 比较验证码
         if (storedCode.equals(code)) {
             // 验证成功，删除存储的验证码
             verificationCodes.remove(userNo);
-            return Result.success("True");
+            return Result.success();
         } else {
-            return Result.error("False");
+            return Result.error("验证码错误");
         }
     }
 }

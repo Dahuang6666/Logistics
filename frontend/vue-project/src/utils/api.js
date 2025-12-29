@@ -65,7 +65,17 @@ export function sendEmail(userNo) {
  */
 export function verifyEmail(userNo, code) {
   return request.post('/school/user/verifyEmail', {
-    userNo,
-    code
+    userNo, code
+  });
+}
+
+/**
+ * 更新密码
+ * @param userNo
+ * @param password
+ */
+export function updatePassword(userNo, password) {
+  return request.put('/school/user/updateUserInfo', {
+    userNo, password
   });
 }

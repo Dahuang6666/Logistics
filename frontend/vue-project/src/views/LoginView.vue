@@ -114,7 +114,7 @@
 
 <script>
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { login, getCaptcha, verifyCaptcha } from '@/utils/api.js'
+import { login, getCaptcha, verifyCaptcha, updatePassword, verifyEmail } from '@/utils/api.js'
 // 新增导入
 import { getEmail, sendEmail } from '@/utils/api.js'
 
@@ -192,6 +192,7 @@ export default {
           }
           else{
             ElMessage.error(response.data.msg)
+            await this.refreshCaptcha()
           }
         } catch (error) {
           ElMessage.error('登录失败，请检查账号密码或网络')
@@ -211,7 +212,7 @@ export default {
       this.isFlipped = false
     },
 
-    // ===== 新增：获取邮箱验证码流程 =====
+    // 获取邮箱验证码流程
     async handleGetEmailCode() {
       // 防止倒计时期间重复点击
       if (this.countdown > 0) return;
@@ -243,7 +244,7 @@ export default {
           }
         );
         this.startCountdown();
-        ElMessage.success('验证码已发送，请查收邮箱（含垃圾邮件箱）');
+        ElMessage.success('验证码已发送，请查收邮箱');
         sendEmail(userNo).catch(err => {
           console.warn('邮件发送异常（已忽略）:', err);
         });
@@ -273,16 +274,50 @@ export default {
     },
 
     // 暂时不做真实重置，只提示
-    handleConfirmReset() {
-      ElMessage.info('密码重置功能待开发')
+    async handleConfirmReset() {
+      const { userNo, emailCode, newPassword } = this.forgetData;
 
+      // 前端校验
+      if (!userNo?.trim()) {
+        ElMessage.warning('请输入学号或工号');
+        return;
+      }
+      if (!emailCode?.trim()) {
+        ElMessage.warning('请输入邮箱验证码');
+        return;
+      }
+      if (!newPassword?.trim()) {
+        ElMessage.warning('请输入新密码');
+        return;
+      }
+
+      try {
+        // 1. 验证邮箱验证码
+        const verifyRes = await verifyEmail(userNo, emailCode);
+        if (verifyRes.data.code !== 1) {
+          ElMessage.error(verifyRes.data.msg || '验证码错误');
+          return;
+        }
+
+        // 2. 验证通过，更新密码
+        const updateRes = await updatePassword(userNo, newPassword);
+        if (updateRes.data.code === 1) {
+          ElMessage.success('密码重置成功！');
+          this.forgetData = { userNo: '', emailCode: '', newPassword: '' }; // 清空表单
+          this.flipToLogin(); // 返回登录页
+        } else {
+          ElMessage.error(updateRes.data.msg || '密码重置失败');
+        }
+      } catch (error) {
+        console.error('重置密码出错:', error);
+        ElMessage.error('网络错误，请稍后重试');
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-/* ========== 全局样式保持不变 ========== */
 * {
   margin: 0;
   padding: 0;
