@@ -177,7 +177,7 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { login, getCaptcha, verifyCaptcha, updatePassword, verifyEmail } from '@/utils/api.js'
+import { login, getCaptcha, verifyCaptcha, updatePassword, verifyEmail, getUserName } from '@/utils/api.js'
 import { getEmail, sendEmail } from '@/utils/api.js'
 
 export default {
@@ -250,7 +250,20 @@ export default {
           const response = await login(this.loginData)
           if (response.data.code === 1) {
             ElMessage.success('登录成功！')
-            console.log('登录用户:', this.loginData.userNo)
+
+            const userName = await getUserName(this.loginData.userNo)
+            // 保存用户信息到 localStorage
+            localStorage.setItem('userName', userName.data.data)
+            localStorage.setItem('userRole', this.loginData.role)
+
+            // 根据角色跳转
+            if (this.loginData.role === 1) {
+              // 学生用户跳转到学生端
+              this.$router.push('/student')
+            } else if (this.loginData.role === 4) {
+              // 管理员跳转到管理端
+              this.$router.push('/admin')
+            }
           }
           else{
             ElMessage.error(response.data.msg)

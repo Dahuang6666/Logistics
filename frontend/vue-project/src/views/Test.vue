@@ -219,7 +219,7 @@ const selectedLevel3 = ref('')
 // 顶部提示相关
 const showDataToast = ref(false)
 const toastTop = ref(-100)
-let toastTimer: number | null = null
+
 
 // 一级选项
 const level1Options = computed(() => {
@@ -303,6 +303,7 @@ const submitData = () => {
   toastTop.value = 20
 
   if (toastTimer) clearTimeout(toastTimer)
+  let toastTimer
   toastTimer = window.setTimeout(() => {
     toastTop.value = -100
     setTimeout(() => {

@@ -5,6 +5,7 @@ import com.dahuang.logistics.entity.Announcement;
 import com.dahuang.logistics.entity.ComplaintSuggestion;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.RepairApplication;
+import com.dahuang.logistics.vo.AnnouncementVO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -31,15 +32,11 @@ public interface StudentMapper {
     @Select("SELECT * FROM school_backend_manage.repair_application WHERE user_no = #{userNo} AND is_deleted = 0 ORDER BY create_time DESC")
     List<RepairApplication> getRepairByUser(String userNo);
 
-    @Select("SELECT * FROM school_backend_manage.announcement " +
-            "WHERE is_deleted = 0 " +
-            "ORDER BY publish_time DESC " +
-            "LIMIT #{offset}, #{limit}")
-    List<Announcement> getAnnouncementList(@Param("offset") int offset, @Param("limit") int limit);
+
+    List<AnnouncementVO> getAnnouncementList(@Param("offset") int offset, @Param("limit") int limit,Integer priority);
 
 
-    @Select("SELECT COUNT(*) FROM school_backend_manage.announcement WHERE is_deleted = 0")
-    int countAnnouncements();
+    int countAnnouncements(Integer priority);
 
     @Select("SELECT * FROM school_backend_manage.announcement WHERE id = #{id} AND is_deleted = 0")
     Announcement getAnnouncementById(@Param("id") Integer id);

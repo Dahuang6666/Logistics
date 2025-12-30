@@ -6,6 +6,7 @@ import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.mapper.StudentMapper;
 import com.dahuang.logistics.service.StudentService;
 import com.dahuang.logistics.utils.AIAnnouncementService;
+import com.dahuang.logistics.vo.AnnouncementVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -74,14 +75,14 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<Announcement> getAnnouncementList(int pageNum, int pageSize) {
+    public List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority) {
         int offset = (pageNum - 1) * pageSize;
-        return studentMapper.getAnnouncementList(offset, pageSize);
+        return studentMapper.getAnnouncementList(offset, pageSize,priority);
     }
 
     @Override
-    public int getAnnouncementCount() {
-        return studentMapper.countAnnouncements();
+    public int getAnnouncementCount(Integer priority) {
+        return studentMapper.countAnnouncements(priority);
     }
 
     @Override

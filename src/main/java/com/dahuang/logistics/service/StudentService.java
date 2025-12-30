@@ -6,6 +6,7 @@ import com.dahuang.logistics.entity.Announcement;
 import com.dahuang.logistics.entity.ComplaintSuggestion;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.RepairApplication;
+import com.dahuang.logistics.vo.AnnouncementVO;
 
 import java.util.List;
 
@@ -20,9 +21,9 @@ public interface StudentService {
 
     List<RepairApplication> getRepairsByUser(String userNo);
 
-    List<Announcement> getAnnouncementList(int pageNum, int pageSize);
+    List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority);
 
-    int getAnnouncementCount();
+    int getAnnouncementCount(Integer priority);
 
     Announcement getAnnouncementById(Integer id);
 
