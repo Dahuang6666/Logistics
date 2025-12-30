@@ -119,13 +119,13 @@
           </div>
 
           <!-- 公告列表 -->
-          <div v-else-if="filteredList.length > 0" class="notice-list">
+          <div v-else-if="announcementList.length > 0" class="notice-list">
             <div
-              v-for="item in filteredList"
+              v-for="item in announcementList"
               :key="item.id"
               class="notice-item"
             >
-              <div class="notice-header">
+            <div class="notice-header">
                 <span
                   class="notice-tag"
                   :class="getTagClass(item.announcementTypeName)"
@@ -207,7 +207,6 @@ export default {
       filterType: 'all',
       loading: false,
       announcementList: [],
-      filteredList: [],
       currentPage: 1,
       pageSize: 10,
       total: 0
@@ -226,62 +225,25 @@ export default {
     async loadAnnouncementList() {
       this.loading = true
       try {
-        const response = await getAnnouncementList(this.currentPage, this.pageSize)
+        const response = await getAnnouncementList({
+          pageNum: this.currentPage,
+          pageSize: this.pageSize,
+          priority: this.filterPriority === 'all' ? null : this.filterPriority
+        })
+
         if (response.data.code === 1) {
           this.announcementList = response.data.data.list || []
           this.total = response.data.data.total || 0
-          this.applyFilters()
         } else {
-          ElMessage.error(response.data.msg || '获取公告列表失败')
+          ElMessage.error('获取公告列表失败')
         }
       } catch (error) {
-        console.error('获取公告列表失败:', error)
+        console.error(error)
         ElMessage.error('网络错误，请稍后重试')
       } finally {
         this.loading = false
       }
     },
-
-    // 应用筛选和搜索
-    applyFilters() {
-      let list = [...this.announcementList]
-
-      // 类型筛选
-      if (this.filterType !== 'all') {
-        list = list.filter(item => item.announcementTypeName === this.filterType)
-      }
-
-      // 关键词搜索
-      if (this.searchKeyword.trim()) {
-        const keyword = this.searchKeyword.toLowerCase()
-        list = list.filter(item =>
-          item.title.toLowerCase().includes(keyword) ||
-          item.content.toLowerCase().includes(keyword)
-        )
-      }
-
-      this.filteredList = list
-    },
-
-    // 搜索处理
-    handleSearch() {
-      this.applyFilters()
-    },
-
-    // 筛选处理
-    handleFilter(type) {
-      this.filterType = type
-      this.applyFilters()
-    },
-
-    // 切换菜单
-    switchMenu(menu) {
-      this.currentMenu = menu
-      if (menu === 'announcement') {
-        this.loadAnnouncementList()
-      }
-    },
-
     // 翻页
     changePage(page) {
       if (page < 1 || page > this.totalPages) return

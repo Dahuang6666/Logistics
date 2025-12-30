@@ -80,12 +80,12 @@ public class DormAdminController {
             return Result.error("删除失败");
         }
     }
-    // 查看所有公告
-    @GetMapping("/listAnnouncement")
-    public Result getAllAnnouncements() {
-        List<Announcement> list = dormAdminService.getAllAnnouncements();
-        return Result.success(list);
-    }
+//    // 查看所有公告
+//    @GetMapping("/listAnnouncement")
+//    public Result getAllAnnouncements() {
+//        List<Announcement> list = dormAdminService.getAllAnnouncements();
+//        return Result.success(list);
+//    }
 
     // 修改公告
     @PutMapping("/updateAnnouncement")
@@ -106,7 +106,5 @@ public class DormAdminController {
             return Result.error("删除失败");
         }
     }
-
-
 
 }

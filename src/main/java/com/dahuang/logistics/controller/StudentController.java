@@ -56,28 +56,33 @@ public class StudentController {
         return Result.success(studentService.getRepairsByUser(userNo));
     }
 
-    //公告查看
     @GetMapping("/announcementList")
-    public Result getAnnouncementList(@RequestParam(defaultValue = "1") int pageNum,
-                                      @RequestParam(defaultValue = "10") int pageSize) {
-        List<AnnouncementVO> list = studentService.getAnnouncementList(pageNum, pageSize);
-        int total =  studentService.getAnnouncementCount();
+    public Result getAnnouncementList(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) Integer priority
+    ) {
+        List<AnnouncementVO> list =
+                studentService.getAnnouncementList(pageNum, pageSize, priority);
+        int total =
+                studentService.getAnnouncementCount(priority);
 
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);
         result.put("total", total);
         return Result.success(result);
     }
+
     //公告详细查看
-    @GetMapping("/detail")
-    public Result getAnnouncementDetail(@RequestParam Integer id) {
-        Announcement announcement = studentService.getAnnouncementById(id);
-        if (announcement != null) {
-            return Result.success(announcement);
-        } else {
-            return Result.error("公告不存在或已删除");
-        }
-    }
+//    @GetMapping("/detail")
+//    public Result getAnnouncementDetail(@RequestParam Integer id) {
+//        Announcement announcement = studentService.getAnnouncementById(id);
+//        if (announcement != null) {
+//            return Result.success(announcement);
+//        } else {
+//            return Result.error("公告不存在或已删除");
+//        }
+//    }
 
     @PostMapping("/submitSuggest")
     public Result submit(@RequestBody ComplaintSuggestion cs) {
