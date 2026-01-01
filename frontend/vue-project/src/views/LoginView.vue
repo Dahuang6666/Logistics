@@ -253,6 +253,7 @@ export default {
 
             const userName = await getUserName(this.loginData.userNo)
             // 保存用户信息到 localStorage
+            localStorage.setItem('token',this.loginData.userNo)
             localStorage.setItem('userName', userName.data.data)
             localStorage.setItem('userRole', this.loginData.role)
 
@@ -356,7 +357,7 @@ export default {
       try {
         const verifyRes = await verifyEmail(userNo, emailCode);
         if (verifyRes.data.code !== 1) {
-          ElMessage.error(verifyRes.data.msg || '验证码错误');
+          ElMessage.error(verifyRes.data.msg);
           return;
         }
 
@@ -366,7 +367,7 @@ export default {
           this.forgetData = { userNo: '', emailCode: '', newPassword: '' };
           this.flipToLogin();
         } else {
-          ElMessage.error(updateRes.data.msg || '密码重置失败');
+          ElMessage.error(updateRes.data.msg );
         }
       } catch (error) {
         console.error('重置密码出错:', error);
@@ -497,7 +498,7 @@ export default {
   100% { transform: translateX(-50%) translateY(0); }
 }
 
-/* ========== 3D 翻转核心 ========== */
+/* 3D 翻转*/
 .flip-box {
   width: 100%;
   max-width: 450px;
@@ -711,7 +712,7 @@ export default {
   box-shadow: 0 0 10px rgba(66, 165, 245, 0.3);
 }
 
-/* ========== 邮箱验证码行 ========== */
+/* 邮箱验证码 */
 .email-captcha-row {
   display: flex;
   gap: 10px;
@@ -755,7 +756,7 @@ export default {
   }
 }
 
-/* ========== 自定义邮箱确认弹窗 ========== */
+/* 邮箱确认弹窗  */
 .modal-overlay {
   position: fixed;
   top: 0;

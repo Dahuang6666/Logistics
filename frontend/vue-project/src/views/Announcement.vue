@@ -5,48 +5,47 @@
     </div>
 
     <div class="filter-bar">
-      <input
-        type="text"
-        class="search-box"
-        placeholder="🔍 搜索公告..."
-        v-model="searchKeyword"
-        @input="handleSearch"
-      />
+      <div class="search-wrapper">
+        <input
+          type="text"
+          class="search-box"
+          placeholder="搜索公告..."
+          v-model="searchKeyword"
+          @keyup.enter="handleSearch"
+        />
+        <button class="search-btn" @click="handleSearch">
+          🔍
+        </button>
+      </div>
 
-      <!-- 全部 -->
       <button
         class="filter-btn"
-        :class="{ active: selectedPriority === null }"
-        @click="selectPriority(null)"
+        :class="{ active: filterType === 'all' }"
+        @click="handleFilter('all')"
       >
         全部
       </button>
-      <!-- 高优先级 (priority=3) -->
       <button
         class="filter-btn"
-        :class="{ active: selectedPriority === 3 }"
-        @click="selectPriority(3)"
+        :class="{ active: filterType === '紧急通知' }"
+        @click="handleFilter('紧急通知')"
       >
-        高优先级
+        紧急通知
       </button>
-      <!-- 中优先级 (priority=2) -->
       <button
         class="filter-btn"
-        :class="{ active: selectedPriority === 2 }"
-        @click="selectPriority(2)"
+        :class="{ active: filterType === '安全提醒' }"
+        @click="handleFilter('安全提醒')"
       >
-         中优先级
+        安全提醒
       </button>
-      <!-- 高优先级 (priority=1) -->
       <button
         class="filter-btn"
-        :class="{ active: selectedPriority === 1 }"
-        @click="selectPriority(1)"
+        :class="{ active: filterType === '温馨提示' }"
+        @click="handleFilter('温馨提示')"
       >
-         低优先级
+        温馨提示
       </button>
-
-
     </div>
 
     <!-- 加载状态 -->
@@ -56,8 +55,12 @@
     </div>
 
     <!-- 公告列表 -->
-    <div v-else-if="announcementList.length > 0" class="notice-list">
-      <div v-for="item in announcementList" :key="item.id" class="notice-item">
+    <div v-else-if="filteredList.length > 0" class="notice-list">
+      <div
+        v-for="item in filteredList"
+        :key="item.id"
+        class="notice-item"
+      >
         <div class="notice-header">
           <span
             class="notice-tag"
@@ -162,9 +165,10 @@ export default {
   data() {
     return {
       searchKeyword: '',
-      selectedPriority: null, // null = 全部, 1/2/3 = 优先级
+      filterType: 'all',
       loading: false,
       announcementList: [],
+      filteredList: [],
       currentPage: 1,
       pageSize: 10,
       total: 0,
@@ -182,16 +186,25 @@ export default {
       const current = this.currentPage
 
       if (total <= 5) {
-        for (let i = 1; i <= total; i++) pages.push(i)
+        for (let i = 1; i <= total; i++) {
+          pages.push(i)
+        }
       } else {
         if (current <= 3) {
-          for (let i = 1; i <= 5; i++) pages.push(i)
+          for (let i = 1; i <= 5; i++) {
+            pages.push(i)
+          }
         } else if (current >= total - 2) {
-          for (let i = total - 4; i <= total; i++) pages.push(i)
+          for (let i = total - 4; i <= total; i++) {
+            pages.push(i)
+          }
         } else {
-          for (let i = current - 2; i <= current + 2; i++) pages.push(i)
+          for (let i = current - 2; i <= current + 2; i++) {
+            pages.push(i)
+          }
         }
       }
+
       return pages
     }
   },
@@ -202,18 +215,13 @@ export default {
     async loadAnnouncementList() {
       this.loading = true
       try {
-        const response = await getAnnouncementList({
-          pageNum: this.currentPage,
-          pageSize: this.pageSize,
-          priority: this.selectedPriority, // 可为 null, 1, 2, 3
-          keyword: this.searchKeyword.trim() || undefined // 可选参数
-        })
-
-        if (response.data?.code === 1) {
-          this.announcementList = response.data.data?.list || []
-          this.total = response.data.data?.total || 0
+        const response = await getAnnouncementList(this.currentPage, this.pageSize)
+        if (response.data.code === 1) {
+          this.announcementList = response.data.data.list || []
+          this.total = response.data.data.total || 0
+          this.applyFilters()
         } else {
-          ElMessage.error(response.data?.msg || '获取公告失败')
+          ElMessage.error(response.data.msg || '获取公告列表失败')
         }
       } catch (error) {
         console.error('获取公告列表失败:', error)
@@ -222,18 +230,35 @@ export default {
         this.loading = false
       }
     },
-    selectPriority(priority) {
-      this.selectedPriority = priority
-      this.currentPage = 1
-      this.loadAnnouncementList()
+
+    applyFilters() {
+      let list = [...this.announcementList]
+
+      if (this.filterType !== 'all') {
+        list = list.filter(item => item.announcementTypeName === this.filterType)
+      }
+
+      if (this.searchKeyword.trim()) {
+        const keyword = this.searchKeyword.toLowerCase()
+        list = list.filter(item =>
+          item.title.toLowerCase().includes(keyword) ||
+          item.content.toLowerCase().includes(keyword)
+        )
+      }
+
+      this.filteredList = list
     },
 
     handleSearch() {
-      this.currentPage = 1
-      this.loadAnnouncementList()
+      this.currentPage = 1  // 重置到第一页
+      this.applyFilters()
     },
 
-    // ✅ 分页
+    handleFilter(type) {
+      this.filterType = type
+      this.applyFilters()
+    },
+
     changePage(page) {
       if (page < 1 || page > this.totalPages) return
       this.currentPage = page
@@ -241,33 +266,34 @@ export default {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
 
-    // ✅ 切换每页条数
+    // 切换每页显示条数
     handlePageSizeChange() {
-      this.currentPage = 1
+      this.currentPage = 1  // 重置到第一页
       this.loadAnnouncementList()
     },
 
-    // ✅ 内容预览
+    // 获取内容摘要（前50个字）
     getContentPreview(content) {
       if (!content) return ''
       return content.length > 50 ? content.substring(0, 50) + '...' : content
     },
 
-    // ✅ 查看详情
+    // 查看详情
     viewDetail(item) {
       this.currentDetail = item
       this.showDetailModal = true
+      // 禁止背景滚动
       document.body.style.overflow = 'hidden'
     },
 
-    // ✅ 关闭弹窗
+    // 关闭详情弹窗
     closeDetail() {
       this.showDetailModal = false
       this.currentDetail = {}
+      // 恢复背景滚动
       document.body.style.overflow = ''
     },
 
-    // ✅ 标签样式（基于 announcementTypeName）
     getTagClass(typeName) {
       const typeMap = {
         '紧急通知': 'tag-urgent',
@@ -280,7 +306,6 @@ export default {
       return typeMap[typeName] || 'tag-default'
     },
 
-    // ✅ 日期格式化
     formatDate(dateString) {
       const date = new Date(dateString)
       const year = date.getFullYear()
@@ -293,7 +318,6 @@ export default {
 </script>
 
 <style scoped>
-/* 你的原有样式保持不变，无需修改 */
 .announcement-view {
   width: 100%;
 }
@@ -308,6 +332,7 @@ export default {
   color: #2c3e50;
 }
 
+/* 搜索和筛选 */
 .filter-bar {
   display: flex;
   gap: 10px;
@@ -315,19 +340,51 @@ export default {
   flex-wrap: wrap;
 }
 
-.search-box {
+.search-wrapper {
   flex: 1;
   min-width: 200px;
   max-width: 300px;
+  display: flex;
+  gap: 0;
+}
+
+.search-box {
+  flex: 1;
   padding: 10px 15px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
   font-size: 13px;
   transition: border-color 0.3s;
 }
 
 .search-box:focus {
   outline: none;
+  border-color: #3498db;
+}
+
+.search-btn {
+  width: 45px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-left: none;
+  background: white;
+  color: #7f8c8d;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-btn:hover {
+  background: #3498db;
+  border-color: #3498db;
+}
+
+.search-box:focus + .search-btn {
   border-color: #3498db;
 }
 
@@ -352,6 +409,7 @@ export default {
   border-color: #3498db;
 }
 
+/* 加载状态 */
 .loading-container {
   text-align: center;
   padding: 60px 20px;
@@ -369,14 +427,11 @@ export default {
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
+/* 公告列表 */
 .notice-list {
   margin-bottom: 20px;
 }
@@ -391,7 +446,7 @@ export default {
 }
 
 .notice-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   transform: translateY(-2px);
 }
 
@@ -411,33 +466,13 @@ export default {
   white-space: nowrap;
 }
 
-.tag-urgent {
-  background: #e74c3c;
-}
-
-.tag-safety {
-  background: #e67e22;
-}
-
-.tag-rule {
-  background: #3498db;
-}
-
-.tag-normal {
-  background: #3498db;
-}
-
-.tag-activity {
-  background: #f39c12;
-}
-
-.tag-tip {
-  background: #27ae60;
-}
-
-.tag-default {
-  background: #95a5a6;
-}
+.tag-urgent { background: #e74c3c; }
+.tag-safety { background: #e67e22; }
+.tag-rule { background: #3498db; }
+.tag-normal { background: #3498db; }
+.tag-activity { background: #f39c12; }
+.tag-tip { background: #27ae60; }
+.tag-default { background: #95a5a6; }
 
 .notice-title {
   font-size: 16px;
@@ -477,6 +512,7 @@ export default {
   transform: translateY(-1px);
 }
 
+/* 空状态 */
 .empty-state {
   text-align: center;
   padding: 80px 20px;
@@ -488,6 +524,7 @@ export default {
   margin-bottom: 20px;
 }
 
+/* 分页 */
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -572,7 +609,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* ========== 弹窗样式（保持不变） ========== */
+/* ========== 详情弹窗 ========== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -684,6 +721,7 @@ export default {
   word-break: break-word;
 }
 
+/* 弹窗动画 */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.3s ease;
@@ -713,6 +751,7 @@ export default {
   }
 }
 
+/* 响应式 */
 @media (max-width: 768px) {
   .modal-box {
     max-width: 95%;

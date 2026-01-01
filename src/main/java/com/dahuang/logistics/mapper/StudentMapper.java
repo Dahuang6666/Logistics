@@ -33,10 +33,10 @@ public interface StudentMapper {
     List<RepairApplication> getRepairByUser(String userNo);
 
 
-    List<AnnouncementVO> getAnnouncementList(@Param("offset") int offset, @Param("limit") int limit,Integer priority);
+    List<AnnouncementVO> getAnnouncementList(@Param("offset") int offset, @Param("limit") int limit,Integer priority,String searchKeyword);
 
 
-    int countAnnouncements(Integer priority);
+    int countAnnouncements(Integer priority,String searchKeyword);
 
     @Select("SELECT * FROM school_backend_manage.announcement WHERE id = #{id} AND is_deleted = 0")
     Announcement getAnnouncementById(@Param("id") Integer id);

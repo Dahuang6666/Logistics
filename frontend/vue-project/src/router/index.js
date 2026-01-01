@@ -27,6 +27,7 @@ const router = createRouter({
       path: '/student',
       name: 'student',
       component: StudentDashboard,
+      meta: { requiresAuth: true },
       redirect: '/student/announcement',  // 默认跳转到公告页
       children: [
         {
@@ -69,9 +70,29 @@ const router = createRouter({
     {
       path: '/admin',
       name: 'admin',
-      component: AdminDashboard
+      component: AdminDashboard,
+      meta: { requiresAuth: true },
     }
   ]
+})
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+  // 判断目标路由是否需要认证
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+
+  // 从 localStorage 获取 token（或你自己的登录状态）
+  const isAuthenticated = !!localStorage.getItem('token')
+
+  if (requiresAuth && !isAuthenticated) {
+    // 需要登录但未登录 → 跳转到登录页
+    next('/')
+  } else if (!requiresAuth && isAuthenticated && to.path === '/') {
+    // 已登录用户访问登录页 → 自动跳转到学生主页（可选优化）
+    next('/student')
+  } else {
+    // 其他情况正常放行
+    next()
+  }
 })
 
 export default router

@@ -75,14 +75,14 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority) {
+    public List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority,String searchKeyword) {
         int offset = (pageNum - 1) * pageSize;
-        return studentMapper.getAnnouncementList(offset, pageSize,priority);
+        return studentMapper.getAnnouncementList(offset, pageSize,priority,searchKeyword);
     }
 
     @Override
-    public int getAnnouncementCount(Integer priority) {
-        return studentMapper.countAnnouncements(priority);
+    public int getAnnouncementCount(Integer priority,String searchKeyword) {
+        return studentMapper.countAnnouncements(priority,searchKeyword);
     }
 
     @Override

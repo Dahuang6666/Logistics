@@ -32,6 +32,9 @@
         <if test="priority != null">
             AND at.priority = #{priority}
         </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND a.title LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
         ORDER BY
         at.priority DESC,
         a.publish_time DESC
@@ -48,6 +51,9 @@
         a.is_deleted = 0
         <if test="priority != null">
             AND at.priority = #{priority}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND a.title LIKE CONCAT('%', #{searchKeyword}, '%')
         </if>
     </select>
 

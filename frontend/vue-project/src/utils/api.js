@@ -84,16 +84,23 @@ export function updatePassword(userNo, password) {
  * 获取公告列表
  * @param {number} pageNum - 页码
  * @param {number} pageSize - 每页数量
+ * @param {number}priority -优先级
+ * @param {String} keyword -title
  * @returns {Promise}
  */
-export function getAnnouncementList({ pageNum = 1, pageSize = 10, priority = null }) {
+export function getAnnouncementList({ pageNum = 1, pageSize = 10, priority = null, keyword = null }) {
   const params = {
     pageNum,
     pageSize
   }
+
   if (priority !== null) {
     params.priority = priority
   }
+  if (keyword && keyword.trim() !== '') {
+    params.keyword = keyword.trim()
+  }
+
   return request.get('/school/student/announcementList', {
     params
   })

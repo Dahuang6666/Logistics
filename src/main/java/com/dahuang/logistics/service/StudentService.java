@@ -21,9 +21,9 @@ public interface StudentService {
 
     List<RepairApplication> getRepairsByUser(String userNo);
 
-    List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority);
+    List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority,String searchKeyword);
 
-    int getAnnouncementCount(Integer priority);
+    int getAnnouncementCount(Integer priority,String searchKeyword);
 
     Announcement getAnnouncementById(Integer id);
 

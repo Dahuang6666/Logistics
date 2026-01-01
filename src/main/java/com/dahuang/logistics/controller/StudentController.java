@@ -60,12 +60,13 @@ public class StudentController {
     public Result getAnnouncementList(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) Integer priority
+            @RequestParam(required = false) Integer priority,
+            @RequestParam(required = false) String keyword
     ) {
         List<AnnouncementVO> list =
-                studentService.getAnnouncementList(pageNum, pageSize, priority);
+                studentService.getAnnouncementList(pageNum, pageSize, priority, keyword);
         int total =
-                studentService.getAnnouncementCount(priority);
+                studentService.getAnnouncementCount(priority, keyword);
 
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);

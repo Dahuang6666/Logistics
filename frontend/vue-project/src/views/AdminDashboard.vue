@@ -254,7 +254,6 @@ export default {
     // 查看详情
     viewDetail(item) {
       ElMessage.info(`查看公告详情: ${item.title}`)
-      // TODO: 跳转到详情页面或打开弹窗
     },
 
     // 退出登录
