@@ -2,10 +2,7 @@ package com.dahuang.logistics.service;
 
 import com.dahuang.logistics.dto.DormChangeApplicationDTO;
 import com.dahuang.logistics.dto.RepairApplicationDTO;
-import com.dahuang.logistics.entity.Announcement;
-import com.dahuang.logistics.entity.ComplaintSuggestion;
-import com.dahuang.logistics.entity.DormChangeApplication;
-import com.dahuang.logistics.entity.RepairApplication;
+import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.vo.AnnouncementVO;
 
 import java.util.List;
@@ -31,4 +28,10 @@ public interface StudentService {
     int insertComplaint(ComplaintSuggestion cs);
 
     List<ComplaintSuggestion> getUserComplaints(String userNo);
+
+    Result getAvailableDormsByBuilding(Integer buildingId);
+
+    Result getAvailableBuildingsByGender(String userNo);
+
+    Result submitFirstDormInfo(String userNo, Integer buildingId, String dormitoryNo);
 }

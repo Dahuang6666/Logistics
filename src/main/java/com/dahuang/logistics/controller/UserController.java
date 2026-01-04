@@ -208,20 +208,5 @@ public class UserController {
         }
         return Result.error("用户名为空");
     }
-
-    //获取用户名
-    @GetMapping("/getUserGender")
-    public Result getUserGender(@RequestParam("userNo") String userNo) {
-        User user = userService.getUserInfoByUserNo(userNo);
-        if (user != null) {
-            if(user.getGender().equals("男")) {
-                return Result.success(1);
-            }
-            else {
-                return Result.success(0);
-            }
-        }
-        return Result.error("用户数据异常");
-    }
 }
 

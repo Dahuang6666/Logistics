@@ -139,13 +139,39 @@ export function getMyFeedbackList(userNo) {
 }
 
 /**
- * 获取用户性别
- *@Param {String} userNo
+ * 检查是否首次登录
+ * @param {string} userNo
  */
-export function getUserGender(userNo) {
-  return request.get('/school/user/getUserGender', {
-    params: {
-      userNo: userNo
-    }
+export function checkFirstLogin(userNo) {
+  return request.get('/school/student/firstLoginInfo', {
+    params: { userNo }
   });
+}
+
+/**
+ * 获取可选宿舍楼(根据性别)
+ * @param {string} userNo
+ */
+export function getAvailableBuildings(userNo) {
+  return request.get('/school/student/getAvailableBuildings', {
+    params: { userNo }
+  });
+}
+
+/**
+ * 获取可用宿舍列表(根据楼号)
+ * @param {number} buildingId
+ */
+export function getAvailableDorms(buildingId) {
+  return request.get('/school/student/getAvailableDorms', {
+    params: { buildingId }
+  });
+}
+
+/**
+ * 提交首次宿舍信息
+ * @param {Object} data - { userNo, buildingId, dormitoryNo }
+ */
+export function submitFirstDormInfo(data) {
+  return request.post('/school/student/submitFirstDormInfo', data);
 }

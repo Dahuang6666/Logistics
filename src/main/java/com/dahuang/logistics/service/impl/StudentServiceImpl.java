@@ -4,6 +4,7 @@ import com.dahuang.logistics.dto.DormChangeApplicationDTO;
 import com.dahuang.logistics.dto.RepairApplicationDTO;
 import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.mapper.StudentMapper;
+import com.dahuang.logistics.mapper.UserMapper;
 import com.dahuang.logistics.service.StudentService;
 import com.dahuang.logistics.utils.AIAnnouncementService;
 import com.dahuang.logistics.vo.AnnouncementVO;
@@ -22,7 +23,8 @@ public class StudentServiceImpl implements StudentService {
     private static final Logger logger = LoggerFactory.getLogger(DormAdminServiceImpl.class);
     @Autowired
     private StudentMapper studentMapper;
-
+    @Autowired
+    private UserMapper userMapper;
     @Autowired
     private AIAnnouncementService aiAnnouncementService;
 
@@ -103,5 +105,46 @@ public class StudentServiceImpl implements StudentService {
         return studentMapper.getUserComplaints(userNo);
     }
 
+    // 根据用户性别获取可选宿舍楼
+    public Result getAvailableBuildingsByGender(String userNo) {
+        // 1. 获取用户性别
+        User user = userMapper.getUserByUserNo(userNo);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
 
+        String gender = user.getGender();
+
+        // 2. 查询对应性别的宿舍楼
+        List<Build> buildings = studentMapper.getBuildingsByGender(gender);
+
+        return Result.success(buildings);
+    }
+
+    // 根据楼号获取可用宿舍(剩余床位>0)
+    public Result getAvailableDormsByBuilding(Integer buildingId) {
+        List<Dormitory> dorms = studentMapper.getAvailableDormsByBuilding(buildingId);
+        return Result.success(dorms);
+    }
+
+    // 提交首次宿舍信息
+    public Result submitFirstDormInfo(String userNo, Integer buildingId, String dormitoryNo) {
+        try {
+            // 1. 检查宿舍是否还有床位
+            Dormitory dorm = studentMapper.getDormitoryByNo(dormitoryNo, buildingId);
+            if (dorm == null || dorm.getAvailableBeds() <= 0) {
+                return Result.error("该宿舍已满或不存在");
+            }
+            // 2. 插入或更新学生宿舍信息
+            int result = studentMapper.updateStudentDormInfo(userNo, buildingId, dormitoryNo);
+            // 3. 更新宿舍剩余床位(-1)
+            if (result > 0) {
+                studentMapper.decreaseDormitoryBeds(dormitoryNo, buildingId);
+                return Result.success("宿舍信息提交成功");
+            }
+            return Result.error("提交失败");
+        } catch (Exception e) {
+            return Result.error("系统异常");
+        }
+    }
 }

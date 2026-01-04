@@ -34,7 +34,27 @@ public class StudentController {
         // 获取当前登录学生信息
        return  studentService.firstLoginInfoPage(userNo);
     }
+    // 根据性别获取可选宿舍楼列表
+    @GetMapping("/getAvailableBuildings")
+    public Result getAvailableBuildings(@RequestParam String userNo) {
+        return studentService.getAvailableBuildingsByGender(userNo);
+    }
 
+    // 根据楼号获取可用宿舍列表
+    @GetMapping("/getAvailableDorms")
+    public Result getAvailableDorms(@RequestParam Integer buildingId) {
+        return studentService.getAvailableDormsByBuilding(buildingId);
+    }
+
+    // 提交首次宿舍信息
+    @PostMapping("/submitFirstDormInfo")
+    public Result submitFirstDormInfo(@RequestBody Map<String, Object> data) {
+        String userNo = (String) data.get("userNo");
+        Integer buildingId = (Integer) data.get("buildingId");
+        String dormitoryNo = (String) data.get("dormitoryNo");
+
+        return studentService.submitFirstDormInfo(userNo, buildingId, dormitoryNo);
+    }
 
     //获取变更宿舍申请进度
     @GetMapping("/getMyDormApplications")

@@ -1,10 +1,7 @@
 package com.dahuang.logistics.mapper;
 
 import com.dahuang.logistics.dto.DormChangeApplicationDTO;
-import com.dahuang.logistics.entity.Announcement;
-import com.dahuang.logistics.entity.ComplaintSuggestion;
-import com.dahuang.logistics.entity.DormChangeApplication;
-import com.dahuang.logistics.entity.RepairApplication;
+import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.vo.AnnouncementVO;
 import org.apache.ibatis.annotations.*;
 
@@ -17,6 +14,41 @@ public interface StudentMapper {
      //是否第一次登录
     @Select("select is_info_completed from school_backend_manage.student_dormitory_info where user_no=#{userNo}")
     Integer firstLoginInfoPage(String userNo);
+    // 根据性别查询宿舍楼
+    @Select("SELECT id, building_number, assigned_gender, description " +
+            "FROM school_backend_manage.build " +
+            "WHERE assigned_gender = #{gender}")
+    List<Build> getBuildingsByGender(String gender);
+
+    // 根据楼号查询可用宿舍(剩余床位>0且状态正常)
+    @Select("SELECT dormitory_id, dormitory_no, building_id, capacity, available_beds, status " +
+            "FROM school_backend_manage.dormitory " +
+            "WHERE building_id = #{buildingId} AND available_beds > 0 AND status = '正常'")
+    List<Dormitory> getAvailableDormsByBuilding(Integer buildingId);
+
+    // 根据宿舍号和楼号查询宿舍
+    @Select("SELECT * FROM school_backend_manage.dormitory " +
+            "WHERE dormitory_no = #{dormitoryNo} AND building_id = #{buildingId}")
+    Dormitory getDormitoryByNo(@Param("dormitoryNo") String dormitoryNo,
+                               @Param("buildingId") Integer buildingId);
+
+    // 更新学生宿舍信息
+    @Update("UPDATE school_backend_manage.student_dormitory_info " +
+            "SET building_id = #{buildingId}, " +
+            "    dormitory_number = #{dormitoryNo}, " +
+            "    is_info_completed = 1, " +
+            "    update_time = CURRENT_TIMESTAMP " +
+            "WHERE user_no = #{userNo}")
+    int updateStudentDormInfo(@Param("userNo") String userNo,
+                              @Param("buildingId") Integer buildingId,
+                              @Param("dormitoryNo") String dormitoryNo);
+
+    // 减少宿舍剩余床位
+    @Update("UPDATE school_backend_manage.dormitory " +
+            "SET available_beds = available_beds - 1 " +
+            "WHERE dormitory_no = #{dormitoryNo} AND building_id = #{buildingId} AND available_beds > 0")
+    int decreaseDormitoryBeds(@Param("dormitoryNo") String dormitoryNo,
+                              @Param("buildingId") Integer buildingId);
     //查看换宿舍申请
     @Select("SELECT * FROM school_backend_manage.dorm_change_application WHERE student_no = #{studentNo} ORDER BY application_time DESC")
     List<DormChangeApplication> getApplicationsByStudent(String studentNo);

@@ -75,19 +75,29 @@
         </router-view>
       </div>
     </div>
+
+    <FirstLoginModal
+      v-model:visible="showFirstLoginModal"
+      :userNo="userNo"
+      @submit-success="handleFirstLoginSuccess"
+    />
   </div>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
-import { getUserName } from '@/utils/api.js'
+import { checkFirstLogin, getUserName } from '@/utils/api.js'
+import FirstLoginModal from '@/views/FirstLoginModal.vue'
 
 export default {
   name: 'StudentDashboard',
+  components: { FirstLoginModal },
   data() {
     return {
       userName: '学生',
-      currentRoute: this.$route.path
+      userNo: '',
+      currentRoute: this.$route.path,
+      showFirstLoginModal: false  // 首次登录弹窗显示状态
     }
   },
   watch: {
@@ -96,27 +106,42 @@ export default {
     }
   },
   async mounted() {
+    this.userNo = localStorage.getItem('userNo') || ''
     await this.loadUserName()
+    await this.checkFirstLoginStatus()  // 检查是否首次登录
   },
   methods: {
     // 加载用户名
-    async loadUserName() {
-      const userNo = localStorage.getItem('userName')
-      if (userNo) {
-        try {
-          const response = await getUserName(userNo)
-          if (response.data.code === 1) {
-            this.userName = response.data.data || userNo
-          } else {
-            this.userName = userNo
-          }
-        } catch (error) {
-          console.error('获取用户名失败:', error)
-          this.userName = userNo
+    loadUserName() {
+      const userName = localStorage.getItem('userName')  // 直接读取用户名
+      if (userName) {
+        this.userName = userName
+      } else {
+        // 兜底处理
+        this.userName = this.userNo || '学生'
+      }
+    },
+    // 检查是否首次登录
+    async checkFirstLoginStatus() {
+      if (!this.userNo) return
+
+      try {
+        const response = await checkFirstLogin(this.userNo)
+
+        // response 返回 boolean: false表示首次登录(未完成信息填写)
+        if (response.data === false) {
+          this.showFirstLoginModal = true
         }
+      } catch (error) {
+        console.error('检查首次登录状态失败:', error)
       }
     },
 
+    // 首次登录信息提交成功回调
+    handleFirstLoginSuccess() {
+      ElMessage.success('欢迎入住!')
+      this.showFirstLoginModal = false
+    },
     // 路由导航
     navigateTo(path) {
       if (this.$route.path !== path) {

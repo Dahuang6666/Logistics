@@ -19,8 +19,8 @@
     >
       <div class="form-header">
         <div class="logo-icon">📝</div>
-        <h2>用户注册</h2>
-        <p class="subtitle">User Registration</p>
+        <h2>学生注册</h2>
+        <p class="subtitle">Student Registration</p>
       </div>
 
       <!-- 步骤指示器 -->
