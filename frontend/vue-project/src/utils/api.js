@@ -118,3 +118,34 @@ export function getUserName(userNo) {
     }
   });
 }
+/**
+ * 提交投诉建议
+ * @param {Object} data - {userNo, content}
+ */
+export function submitFeedback(data) {
+  return request.post('/school/student/submitSuggest', data);
+}
+
+/**
+ * 获取我的投诉建议列表
+ * @param {string} userNo - 用户学号
+ */
+export function getMyFeedbackList(userNo) {
+  return request.get('/school/student/mySuggestList', {
+    params: {
+      userNo: userNo
+    }
+  });
+}
+
+/**
+ * 获取用户性别
+ *@Param {String} userNo
+ */
+export function getUserGender(userNo) {
+  return request.get('/school/user/getUserGender', {
+    params: {
+      userNo: userNo
+    }
+  });
+}

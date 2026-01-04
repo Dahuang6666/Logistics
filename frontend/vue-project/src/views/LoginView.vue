@@ -253,6 +253,8 @@ export default {
 
             const userName = await getUserName(this.loginData.userNo)
             // 保存用户信息到 localStorage
+
+            localStorage.setItem('userNo',this.loginData.userNo)
             localStorage.setItem('token',this.loginData.userNo)
             localStorage.setItem('userName', userName.data.data)
             localStorage.setItem('userRole', this.loginData.role)

@@ -35,6 +35,7 @@ public class StudentController {
        return  studentService.firstLoginInfoPage(userNo);
     }
 
+
     //获取变更宿舍申请进度
     @GetMapping("/getMyDormApplications")
     public Result getMyDormApplications(@RequestParam String studentNo) {
