@@ -39,7 +39,7 @@ class LogisticsApplicationTests {
 
     @Test
     public void analyze() {
-        String content = "床从窗户飞了";
+        String content = "床从窗户飞了 😃";
         String prompt = String.format(AiConfig.TYPE_JUDGEMENT_PROMPT, content);
         String result = chatModel.chat(prompt);
         System.out.println("AI返回结果：\n" + result);
@@ -69,4 +69,9 @@ class LogisticsApplicationTests {
         return "紧急度".equals(key) ? "中" : "未知"; // 紧急度默认"中"，类型默认"未知"
     }
 
+
+    @Test
+    public void TestDir (){
+        System.out.println( System.getProperty("user.dir"));
+    }
 }

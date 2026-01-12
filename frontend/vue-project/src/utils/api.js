@@ -175,3 +175,43 @@ export function getAvailableDorms(buildingId) {
 export function submitFirstDormInfo(data) {
   return request.post('/school/student/submitFirstDormInfo', data);
 }
+
+/**
+ * 获取学生个人资料(含宿舍和室友信息)
+ * @param {string} userNo - 学号
+ */
+export function getStudentProfile(userNo) {
+  return request.get('/school/student/getStudentProfile', {
+    params: { userNo }
+  })
+}
+
+/**
+ * 上传用户头像
+ * @param {string} userNo - 用户学号/工号
+ * @param {File} file - 头像图片文件
+ * @returns {Promise}
+ */
+export function uploadAvatar(userNo, file) {
+  const formData = new FormData();
+  formData.append('userNo', userNo);
+  formData.append('file', file);
+  return request.post('/school/user/uploadAvatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
+
+/**
+ * 获取用户头像 URL
+ * @param {string} userNo - 用户学号/工号
+ * @returns {Promise}
+ */
+export function getAvatarUrl(userNo) {
+  return request.get('/school/user/avatar', {
+    params: {
+      userNo: userNo
+    }
+  });
+}

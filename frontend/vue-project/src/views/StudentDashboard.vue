@@ -50,17 +50,15 @@
         </div>
         <div
           class="menu-item"
-          :class="{ active: currentRoute === '/student/dorm' }"
-          @click="navigateTo('/student/dorm')"
-        >
-          🏢 宿舍信息
-        </div>
-        <div
-          class="menu-item"
           :class="{ active: currentRoute === '/student/feedback' }"
           @click="navigateTo('/student/feedback')"
         >
           💬 投诉与建议
+        </div>
+        <div class="menu-item"
+             :class="{ active: currentRoute === '/student/profile' }"
+             @click="navigateTo('/student/profile')">
+          👤 个人中心
         </div>
       </div>
     </div>
@@ -152,7 +150,7 @@ export default {
     // 退出登录
     handleLogout() {
       if (confirm('确定要退出登录吗？')) {
-        localStorage.clear()
+        sessionStorage.clear()
         this.$router.push('/')
         ElMessage.success('已退出登录')
       }

@@ -252,12 +252,12 @@ export default {
             ElMessage.success('登录成功！')
 
             const userName = await getUserName(this.loginData.userNo)
-            // 保存用户信息到 localStorage
+            // 保存用户信息到 sessionStorage
 
-            localStorage.setItem('userNo',this.loginData.userNo)
-            localStorage.setItem('token',this.loginData.userNo)
-            localStorage.setItem('userName', userName.data.data)
-            localStorage.setItem('userRole', this.loginData.role)
+            sessionStorage.setItem('userNo', this.loginData.userNo)
+            sessionStorage.setItem('token', this.loginData.userNo)
+            sessionStorage.setItem('userName', userName.data.data)
+            sessionStorage.setItem('userRole', this.loginData.role)
 
             // 根据角色跳转
             if (this.loginData.role === 1) {

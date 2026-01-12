@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @CrossOrigin(origins = "*")
 @RequestMapping("/school/user")
 public class UserController {
+    private static final String defaultImg="http://localhost:8080/imgs/default.jpg";
     // 临时存储验证码和用户名
     private final Map<String, String> verificationCodes = new HashMap<>();
     //存储图片验证码
@@ -100,7 +101,18 @@ public class UserController {
             return Result.error("头像上传失败");
         }
     }
-
+    // 根据学号/工号获取头像
+    @GetMapping("/avatar")
+    public Result  getAvatarUrl(@RequestParam String userNo) {
+        String avatarUrl = userService.getAvatarUrl(userNo);
+        if(avatarUrl != null && !avatarUrl.isEmpty())
+        {
+            return  Result.success(userService.getAvatarUrl(userNo));
+        }
+        else{
+            return  Result.success(defaultImg);
+        }
+    }
 
     @GetMapping("/getUserInfo")
     public Result getUserInfo(@RequestParam("userNo") String userNo) {

@@ -34,4 +34,6 @@ public interface StudentService {
     Result getAvailableBuildingsByGender(String userNo);
 
     Result submitFirstDormInfo(String userNo, Integer buildingId, String dormitoryNo);
+
+    Result getStudentProfile(String userNo);
 }

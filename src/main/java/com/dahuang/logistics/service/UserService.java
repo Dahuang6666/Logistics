@@ -28,6 +28,8 @@ public interface UserService {
     String sendSimpleEmail(String userNo);
 
     String getEmail(String userNo);
+
+    String getAvatarUrl(String username);
 }
 
 

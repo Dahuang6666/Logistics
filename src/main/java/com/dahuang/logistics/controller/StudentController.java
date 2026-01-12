@@ -1,7 +1,6 @@
 package com.dahuang.logistics.controller;
 import com.dahuang.logistics.dto.DormChangeApplicationDTO;
 import com.dahuang.logistics.dto.RepairApplicationDTO;
-import com.dahuang.logistics.entity.Announcement;
 import com.dahuang.logistics.entity.ComplaintSuggestion;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.Result;
@@ -77,6 +76,7 @@ public class StudentController {
         return Result.success(studentService.getRepairsByUser(userNo));
     }
 
+    //公告查看
     @GetMapping("/announcementList")
     public Result getAnnouncementList(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -105,15 +105,21 @@ public class StudentController {
 //            return Result.error("公告不存在或已删除");
 //        }
 //    }
-
+//提交建议
     @PostMapping("/submitSuggest")
     public Result submit(@RequestBody ComplaintSuggestion cs) {
         return studentService.insertComplaint(cs) > 0 ? Result.success() : Result.error("提交失败");
     }
-
+//获取建议
     @GetMapping("/mySuggestList")
     public Result myComplaints(@RequestParam String userNo) {
         return Result.success(studentService.getUserComplaints(userNo));
+    }
+
+//获取学生的宿舍信息
+    @GetMapping("/getStudentProfile")
+    public Result getStudentProfile(@RequestParam String userNo) {
+        return studentService.getStudentProfile(userNo);
     }
 
 }

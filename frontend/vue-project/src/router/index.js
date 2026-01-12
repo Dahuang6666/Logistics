@@ -4,12 +4,13 @@ import Register from '@/views/Register.vue'
 import StudentDashboard from '@/views/StudentDashboard.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import Announcement  from '@/views/Announcement.vue'
-import DormInfo from '@/views/DormInfo.vue'
 import RepairApply from '@/views/RepairApply.vue'
 import RepairProgress from '@/views/RepairProgress.vue'
 import DormChange from '@/views/DormChange.vue'
 import ChangeProgress from '@/views/ChangeProgress.vue'
 import Feedback from '@/views/Feedback.vue'
+import StudentProfile from '@/views/StudentProfile.vue'
+import AvatarTest  from '@/views/AvatarTest.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -36,11 +37,6 @@ const router = createRouter({
           component: Announcement
         },
         {
-          path: 'dorm',
-          name: 'student-dorm',
-          component: DormInfo
-        },
-        {
           path: 'repair',
           name: 'student-repair',
           component: RepairApply
@@ -64,6 +60,11 @@ const router = createRouter({
           path: 'feedback',
           name: 'student-feedback',
           component: Feedback
+        },
+        {
+          path: 'profile',
+          name: 'student-profile',
+          component: StudentProfile
         }
       ]
     },
@@ -79,9 +80,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // 判断目标路由是否需要认证
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-
-  // 从 localStorage 获取 token（或你自己的登录状态）
-  const isAuthenticated = !!localStorage.getItem('token')
+  // 从 localStorage 获取 token
+  const isAuthenticated = !!sessionStorage.getItem('token')
 
   if (requiresAuth && !isAuthenticated) {
     // 需要登录但未登录 → 跳转到登录页

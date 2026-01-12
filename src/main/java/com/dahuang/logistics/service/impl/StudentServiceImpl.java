@@ -14,9 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -146,5 +144,35 @@ public class StudentServiceImpl implements StudentService {
         } catch (Exception e) {
             return Result.error("系统异常");
         }
+    }
+
+
+    public Result getStudentProfile(String userNo) {
+        Map<String, Object> profile = new HashMap<>();
+
+        // 1. 获取用户基本信息
+        User user = userMapper.getUserByUserNo(userNo);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        profile.put("userInfo", user);
+
+        // 2. 获取宿舍信息(联表查询)
+        Map<String, Object> dormInfo = studentMapper.getDormInfoByUserNo(userNo);
+        profile.put("dormInfo", dormInfo);
+
+        // 3. 获取室友列表
+        if (dormInfo != null) {
+            List<Map<String, Object>> roommates = studentMapper.getRoommatesByDormInfo(
+                    (Integer) dormInfo.get("buildingId"),
+                    (String) dormInfo.get("dormitoryNumber"),
+                    userNo
+            );
+            profile.put("roommates", roommates);
+        } else {
+            profile.put("roommates", new ArrayList<>());
+        }
+
+        return Result.success(profile);
     }
 }

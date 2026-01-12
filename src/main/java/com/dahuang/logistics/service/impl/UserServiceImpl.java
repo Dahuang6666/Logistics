@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
 
         // 构造保存路径（项目根目录下的 /imgs 文件夹）
         String rootPath = System.getProperty("user.dir");
-        File imgsDir = new File(rootPath, "imgs");
+        File imgsDir = new File(rootPath, "/src/main/resources/static/imgs");
         if (!imgsDir.exists()) {
             imgsDir.mkdirs();
         }
@@ -144,4 +144,8 @@ public class UserServiceImpl implements UserService {
        return  userMapper.getEmail(userNo);
     }
 
+    @Override
+    public String getAvatarUrl(String username) {
+        return  userMapper.getAvatarUrl(username);
+    }
 }

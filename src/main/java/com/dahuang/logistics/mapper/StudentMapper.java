@@ -6,6 +6,7 @@ import com.dahuang.logistics.vo.AnnouncementVO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface StudentMapper {
@@ -82,6 +83,40 @@ public interface StudentMapper {
     @Select("SELECT * FROM school_backend_manage.complaint_suggestion WHERE user_no = #{userNo} AND is_deleted = 0 ORDER BY create_time DESC")
     List<ComplaintSuggestion> getUserComplaints(@Param("userNo") String userNo);
 
+    // 获取宿舍信息(联表查询)
+    @Select("SELECT " +
+            "sdi.building_id AS buildingId, " +
+            "sdi.dormitory_number AS dormitoryNumber, " +
+            "b.building_number AS buildingNumber, " +
+            "b.assigned_gender AS assignedGender, " +
+            "d.capacity, " +
+            "d.available_beds AS availableBeds, " +
+            "d.status " +
+            "FROM student_dormitory_info sdi " +
+            "LEFT JOIN build b ON sdi.building_id = b.id " +
+            "LEFT JOIN dormitory d ON sdi.building_id = d.building_id " +
+            "  AND sdi.dormitory_number = d.dormitory_no " +
+            "WHERE sdi.user_no = #{userNo} AND sdi.is_info_completed = 1")
+    Map<String, Object> getDormInfoByUserNo(String userNo);
+
+    // 获取室友列表
+    @Select("SELECT " +
+            "u.user_no AS userNo, " +
+            "u.username, " +
+            "u.gender, " +
+            "u.phone, " +
+            "u.email " +
+            "FROM user u " +
+            "INNER JOIN student_dormitory_info sdi ON u.user_no = sdi.user_no " +
+            "WHERE sdi.building_id = #{buildingId} " +
+            "  AND sdi.dormitory_number = #{dormitoryNumber} " +
+            "  AND u.user_no != #{currentUserNo} " +
+            "ORDER BY u.user_no")
+    List<Map<String, Object>> getRoommatesByDormInfo(
+            @Param("buildingId") Integer buildingId,
+            @Param("dormitoryNumber") String dormitoryNumber,
+            @Param("currentUserNo") String currentUserNo
+    );
 
 
 }

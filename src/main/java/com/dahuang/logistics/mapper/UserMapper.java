@@ -29,4 +29,7 @@ public interface UserMapper {
 
     @Select("select email from user where user_no=#{userNo}")
     String getEmail(String userNo);
+
+    @Select("select avatar_url from school_backend_manage.user where user_no=#{userNo}")
+    String getAvatarUrl(String userNo);
 }
