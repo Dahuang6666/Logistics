@@ -32,15 +32,15 @@
       </button>
       <button
         class="filter-btn"
-        @click="handleFilter('普通通知')"
+        @click="handleFilter('重要通知')"
       >
-        普通通知
+        重要通知
       </button>
       <button
         class="filter-btn"
-        @click="handleFilter('温馨提示')"
+        @click="handleFilter('普通通知')"
       >
-        温馨提示
+        普通通知
       </button>
     </div>
 
@@ -241,8 +241,8 @@ export default {
 
       const map = {
         all: null,
-        '温馨提示': 1,
-        '普通通知': 2,
+        '普通通知': 1,
+        '重要通知': 2,
         '紧急通知': 3
       }
 
