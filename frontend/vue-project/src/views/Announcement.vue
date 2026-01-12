@@ -20,28 +20,24 @@
 
       <button
         class="filter-btn"
-        :class="{ active: filterType === 'all' }"
         @click="handleFilter('all')"
       >
         全部
       </button>
       <button
         class="filter-btn"
-        :class="{ active: filterType === '紧急通知' }"
         @click="handleFilter('紧急通知')"
       >
         紧急通知
       </button>
       <button
         class="filter-btn"
-        :class="{ active: filterType === '安全提醒' }"
-        @click="handleFilter('安全提醒')"
+        @click="handleFilter('普通通知')"
       >
-        安全提醒
+        普通通知
       </button>
       <button
         class="filter-btn"
-        :class="{ active: filterType === '温馨提示' }"
         @click="handleFilter('温馨提示')"
       >
         温馨提示
@@ -55,9 +51,9 @@
     </div>
 
     <!-- 公告列表 -->
-    <div v-else-if="filteredList.length > 0" class="notice-list">
+    <div v-else-if="announcementList.length > 0" class="notice-list">
       <div
-        v-for="item in filteredList"
+        v-for="item in announcementList"
         :key="item.id"
         class="notice-item"
       >
@@ -165,17 +161,17 @@ export default {
   data() {
     return {
       searchKeyword: '',
-      filterType: 'all',
+      priority: null,     // 1 / 2 / 3
       loading: false,
       announcementList: [],
-      filteredList: [],
       currentPage: 1,
       pageSize: 10,
       total: 0,
       showDetailModal: false,
       currentDetail: {}
     }
-  },
+  }
+,
   computed: {
     totalPages() {
       return Math.ceil(this.total / this.pageSize)
@@ -215,55 +211,50 @@ export default {
     async loadAnnouncementList() {
       this.loading = true
       try {
-        const response = await getAnnouncementList(this.currentPage, this.pageSize)
-        if (response.data.code === 1) {
-          this.announcementList = response.data.data.list || []
-          this.total = response.data.data.total || 0
-          this.applyFilters()
+        const res = await getAnnouncementList(
+          this.currentPage,
+          this.pageSize,
+          this.priority,
+          this.searchKeyword
+        )
+
+        if (res.data.code === 1) {
+          this.announcementList = res.data.data.list || []
+          this.total = res.data.data.total || 0
         } else {
-          ElMessage.error(response.data.msg || '获取公告列表失败')
+          ElMessage.error(res.data.msg )
         }
-      } catch (error) {
-        console.error('获取公告列表失败:', error)
-        ElMessage.error('网络错误，请稍后重试')
+      } catch (e) {
+        console.error(e)
+        ElMessage.error('网络错误')
       } finally {
         this.loading = false
       }
     },
-
-    applyFilters() {
-      let list = [...this.announcementList]
-
-      if (this.filterType !== 'all') {
-        list = list.filter(item => item.announcementTypeName === this.filterType)
-      }
-
-      if (this.searchKeyword.trim()) {
-        const keyword = this.searchKeyword.toLowerCase()
-        list = list.filter(item =>
-          item.title.toLowerCase().includes(keyword) ||
-          item.content.toLowerCase().includes(keyword)
-        )
-      }
-
-      this.filteredList = list
-    },
-
     handleSearch() {
-      this.currentPage = 1  // 重置到第一页
-      this.applyFilters()
+      this.currentPage = 1
+      this.loadAnnouncementList()
     },
 
     handleFilter(type) {
-      this.filterType = type
-      this.applyFilters()
-    },
+      this.currentPage = 1
+
+      const map = {
+        all: null,
+        '温馨提示': 1,
+        '普通通知': 2,
+        '紧急通知': 3
+      }
+
+      this.priority = map[type]
+      this.loadAnnouncementList()
+    }
+,
 
     changePage(page) {
       if (page < 1 || page > this.totalPages) return
       this.currentPage = page
       this.loadAnnouncementList()
-      window.scrollTo({ top: 0, behavior: 'smooth' })
     },
 
     // 切换每页显示条数

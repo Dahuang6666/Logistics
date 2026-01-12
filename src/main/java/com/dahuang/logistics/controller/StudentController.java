@@ -116,7 +116,7 @@ public class StudentController {
         return Result.success(studentService.getUserComplaints(userNo));
     }
 
-//获取学生的宿舍信息
+//获取学生个人信息
     @GetMapping("/getStudentProfile")
     public Result getStudentProfile(@RequestParam String userNo) {
         return studentService.getStudentProfile(userNo);

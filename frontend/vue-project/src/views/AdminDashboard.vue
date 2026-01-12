@@ -225,21 +225,22 @@ export default {
     async loadAnnouncementList() {
       this.loading = true
       try {
-        const response = await getAnnouncementList({
-          pageNum: this.currentPage,
-          pageSize: this.pageSize,
-          priority: this.filterPriority === 'all' ? null : this.filterPriority
-        })
+        const res = await getAnnouncementList(
+          this.currentPage,
+          this.pageSize,
+          this.priority,
+          this.searchKeyword
+        )
 
-        if (response.data.code === 1) {
-          this.announcementList = response.data.data.list || []
-          this.total = response.data.data.total || 0
+        if (res.data.code === 1) {
+          this.announcementList = res.data.data.list || []
+          this.total = res.data.data.total || 0
         } else {
-          ElMessage.error('获取公告列表失败')
+          ElMessage.error(res.data.msg )
         }
-      } catch (error) {
-        console.error(error)
-        ElMessage.error('网络错误，请稍后重试')
+      } catch (e) {
+        console.error(e)
+        ElMessage.error('网络错误')
       } finally {
         this.loading = false
       }
