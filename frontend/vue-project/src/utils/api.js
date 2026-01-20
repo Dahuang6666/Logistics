@@ -217,3 +217,11 @@ export function getAvatarUrl(userNo) {
     }
   });
 }
+
+/**
+ * 更新用户信息(姓名、手机、邮箱)
+ * @param {Object} data - { userNo, username, phone, email }
+ */
+export function updateUserProfile(data) {
+  return request.put('/school/user/updateUserInfo', data);
+}

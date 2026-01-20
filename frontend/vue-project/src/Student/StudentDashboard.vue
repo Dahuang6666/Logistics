@@ -85,7 +85,7 @@
 <script>
 import { ElMessage } from 'element-plus'
 import { checkFirstLogin, getUserName } from '@/utils/api.js'
-import FirstLoginModal from '@/views/FirstLoginModal.vue'
+import FirstLoginModal from '@/Student/FirstLoginModal.vue'
 
 export default {
   name: 'StudentDashboard',

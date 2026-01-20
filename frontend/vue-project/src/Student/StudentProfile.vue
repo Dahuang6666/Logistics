@@ -103,7 +103,7 @@
         </div>
       </div>
 
-      <!-- 第二行:室友信息 (原版样式) -->
+      <!-- 第二行:室友信息 -->
       <div class="info-card full-width">
         <div class="card-header">
           <span class="card-icon">👥</span>
@@ -141,22 +141,104 @@
         </div>
         <div class="card-body">
           <div class="action-buttons">
-            <button class="action-btn" @click="handleChangePassword">
+            <button class="action-btn" @click="showPasswordModal = true">
               🔒 修改密码
             </button>
-            <button class="action-btn" @click="handleEditProfile">
+            <button class="action-btn" @click="openEditModal">
               ✏️ 编辑个人资料
             </button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 修改密码弹窗 -->
+    <transition name="modal-fade">
+      <div v-if="showPasswordModal" class="modal-overlay" @click="closePasswordModal">
+        <div class="modal-box" @click.stop>
+          <div class="modal-header">
+            <h3>🔒 修改密码</h3>
+            <button class="close-btn" @click="closePasswordModal">✕</button>
+          </div>
+          <div class="modal-content">
+            <div class="form-group">
+              <label>新密码</label>
+              <input
+                v-model="passwordForm.newPassword"
+                type="password"
+                placeholder="请输入新密码(6-20位)"
+                class="form-input"
+              />
+            </div>
+            <div class="form-group">
+              <label>确认密码</label>
+              <input
+                v-model="passwordForm.confirmPassword"
+                type="password"
+                placeholder="请再次输入新密码"
+                class="form-input"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn cancel-btn" @click="closePasswordModal">取消</button>
+            <button class="modal-btn confirm-btn" @click="handlePasswordSubmit">确认修改</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 编辑个人资料弹窗 -->
+    <transition name="modal-fade">
+      <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+        <div class="modal-box" @click.stop>
+          <div class="modal-header">
+            <h3>✏️ 编辑个人资料</h3>
+            <button class="close-btn" @click="closeEditModal">✕</button>
+          </div>
+          <div class="modal-content">
+            <div class="form-group">
+              <label>姓名</label>
+              <input
+                v-model="editForm.username"
+                type="text"
+                placeholder="请输入姓名"
+                class="form-input"
+              />
+            </div>
+            <div class="form-group">
+              <label>手机号</label>
+              <input
+                v-model="editForm.phone"
+                type="text"
+                placeholder="请输入手机号"
+                class="form-input"
+                maxlength="11"
+              />
+            </div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input
+                v-model="editForm.email"
+                type="email"
+                placeholder="请输入邮箱"
+                class="form-input"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn cancel-btn" @click="closeEditModal">取消</button>
+            <button class="modal-btn confirm-btn" @click="handleEditSubmit">保存修改</button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import { ElMessage } from 'element-plus'
-import { getStudentProfile, getAvatarUrl, uploadAvatar } from '@/utils/api.js'
+import { getStudentProfile, getAvatarUrl, uploadAvatar, updateUserProfile, updatePassword } from '@/utils/api.js'
 
 export default {
   name: 'StudentProfile',
@@ -167,7 +249,22 @@ export default {
       dormInfo: null,
       roommates: [],
       avatarUrl: '',
-      uploading: false
+      uploading: false,
+
+      // 修改密码弹窗
+      showPasswordModal: false,
+      passwordForm: {
+        newPassword: '',
+        confirmPassword: ''
+      },
+
+      // 编辑资料弹窗
+      showEditModal: false,
+      editForm: {
+        username: '',
+        phone: '',
+        email: ''
+      }
     }
   },
   mounted() {
@@ -180,25 +277,21 @@ export default {
       try {
         const userNo = sessionStorage.getItem('userNo')
 
-        // 并发请求:获取个人资料 + 头像
         const [profileRes, avatarRes] = await Promise.all([
           getStudentProfile(userNo),
           getAvatarUrl(userNo)
         ])
 
-        // 处理个人资料
         if (profileRes.data.code === 1) {
           const data = profileRes.data.data
           this.userInfo = data.userInfo || {}
           this.dormInfo = data.dormInfo
           this.roommates = data.roommates || []
         } else {
-          ElMessage.error(profileRes.data.msg )
+          ElMessage.error(profileRes.data.msg)
         }
 
-        // 处理头像
         if (avatarRes.data.code === 1) {
-          console.log("头像",avatarRes.data.data)
           this.avatarUrl = avatarRes.data.data
         }
       } catch (error) {
@@ -219,22 +312,17 @@ export default {
       const file = event.target.files[0]
       if (!file) return
 
-      // 验证文件类型
       if (!file.type.startsWith('image/')) {
         ElMessage.error('请选择图片文件')
         return
       }
 
-      // 验证文件大小 (限制2MB)
       if (file.size > 2 * 1024 * 1024) {
         ElMessage.error('图片大小不能超过2MB')
         return
       }
 
-      // 上传头像
       await this.uploadAvatarFile(file)
-
-      // 清空input,允许重复选择同一文件
       event.target.value = ''
     },
 
@@ -244,8 +332,7 @@ export default {
       const loadingMsg = ElMessage({
         message: '正在上传头像...',
         type: 'info',
-        duration: 0,
-        iconClass: 'el-icon-loading'
+        duration: 0
       })
 
       try {
@@ -253,13 +340,12 @@ export default {
         const response = await uploadAvatar(userNo, file)
 
         if (response.data.code === 1) {
-          // 上传成功,更新头像显示
           this.avatarUrl = response.data.data
           loadingMsg.close()
           ElMessage.success('头像上传成功!')
         } else {
           loadingMsg.close()
-          ElMessage.error(response.data.msg )
+          ElMessage.error(response.data.msg)
         }
       } catch (error) {
         console.error('上传头像失败:', error)
@@ -267,6 +353,122 @@ export default {
         ElMessage.error('网络错误,请稍后重试')
       } finally {
         this.uploading = false
+      }
+    },
+
+    // 打开编辑资料弹窗
+    openEditModal() {
+      this.editForm = {
+        username: this.userInfo.username || '',
+        phone: this.userInfo.phone || '',
+        email: this.userInfo.email || ''
+      }
+      this.showEditModal = true
+    },
+
+    // 关闭编辑资料弹窗
+    closeEditModal() {
+      this.showEditModal = false
+      this.editForm = {
+        username: '',
+        phone: '',
+        email: ''
+      }
+    },
+
+    // 提交编辑资料
+    async handleEditSubmit() {
+      // 验证
+      if (!this.editForm.username?.trim()) {
+        ElMessage.warning('请输入姓名')
+        return
+      }
+
+      if (this.editForm.phone && !/^1[3-9]\d{9}$/.test(this.editForm.phone)) {
+        ElMessage.warning('请输入正确的手机号')
+        return
+      }
+
+      if (this.editForm.email && !/^[\w.-]+@[\w.-]+\.\w+$/.test(this.editForm.email)) {
+        ElMessage.warning('请输入正确的邮箱')
+        return
+      }
+
+      try {
+        const userNo = sessionStorage.getItem('userNo')
+        const response = await updateUserProfile({
+          userNo,
+          username: this.editForm.username,
+          phone: this.editForm.phone,
+          email: this.editForm.email
+        })
+
+        if (response.data.code === 1) {
+          ElMessage.success('个人资料修改成功!')
+          this.closeEditModal()
+          // 刷新数据
+          await this.loadProfile()
+        } else {
+          ElMessage.error(response.data.msg || '修改失败')
+        }
+      } catch (error) {
+        console.error('修改个人资料失败:', error)
+        ElMessage.error('网络错误,请稍后重试')
+      }
+    },
+
+    // 关闭修改密码弹窗
+    closePasswordModal() {
+      this.showPasswordModal = false
+      this.passwordForm = {
+        newPassword: '',
+        confirmPassword: ''
+      }
+    },
+
+    // 提交修改密码
+    async handlePasswordSubmit() {
+      // 验证
+      if (!this.passwordForm.newPassword) {
+        ElMessage.warning('请输入新密码')
+        return
+      }
+
+      if (this.passwordForm.newPassword.length < 6 || this.passwordForm.newPassword.length > 20) {
+        ElMessage.warning('密码长度应为6-20位')
+        return
+      }
+
+      if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+        ElMessage.warning('两次输入的密码不一致')
+        return
+      }
+
+      try {
+        const userNo = sessionStorage.getItem('userNo')
+
+        console.log("newPassword ",this.passwordForm.newPassword)
+
+        const response = await updatePassword(
+          userNo,
+          this.passwordForm.newPassword
+        )
+
+        if (response.data.code === 1) {
+          ElMessage.success('密码修改成功,请重新登录!')
+          this.closePasswordModal()
+
+          // 清除登录信息并跳转到登录页
+          setTimeout(() => {
+            sessionStorage.clear()
+            this.$router.push('/')
+          }, 1500)
+        } else {
+          ElMessage.error(response.data.msg || '修改失败')
+        }
+      } catch (error) {
+        console.error('修改密码失败:', error)
+        ElMessage.error('网络错误,请稍后重试')
       }
     },
 
@@ -290,22 +492,187 @@ export default {
     getEmptyBeds() {
       if (!this.dormInfo) return 0
       return this.dormInfo.availableBeds
-    },
-
-    // 修改密码
-    handleChangePassword() {
-      ElMessage.info('修改密码功能开发中...')
-    },
-
-    // 编辑个人资料
-    handleEditProfile() {
-      ElMessage.info('编辑资料功能开发中...')
     }
   }
 }
 </script>
 
 <style scoped>
+/* ... 原有样式保持不变 ... */
+
+/* 弹窗样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 450px;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f5f5f5;
+  color: #666;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+.modal-content {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 25px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-btn {
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+
+.cancel-btn:hover {
+  background: #bdc3c7;
+}
+
+.confirm-btn {
+  background: #3498db;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* 弹窗动画 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .modal-box {
+  animation: modalSlideIn 0.3s ease;
+}
+
+.modal-fade-leave-active .modal-box {
+  animation: modalSlideOut 0.3s ease;
+}
+
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+}
+
+/* 原有样式... */
 .profile-container {
   width: 100%;
 }
@@ -320,7 +687,6 @@ export default {
   color: #2c3e50;
 }
 
-/* 加载状态 */
 .loading-container {
   text-align: center;
   padding: 60px 20px;
@@ -342,7 +708,6 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* 个人资料内容 */
 .profile-content {
   display: flex;
   flex-direction: column;
@@ -390,7 +755,6 @@ export default {
   padding: 20px;
 }
 
-/* 头像区域 */
 .avatar-section {
   display: flex;
   justify-content: center;
@@ -490,7 +854,6 @@ export default {
   padding: 20px;
 }
 
-/* 室友列表 */
 .roommate-list {
   display: flex;
   flex-direction: column;
@@ -540,7 +903,6 @@ export default {
   color: #7f8c8d;
 }
 
-/* 操作按钮 */
 .action-buttons {
   display: flex;
   gap: 15px;
@@ -566,7 +928,6 @@ export default {
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
-/* 响应式 */
 @media (max-width: 768px) {
   .info-row {
     grid-template-columns: 1fr;
