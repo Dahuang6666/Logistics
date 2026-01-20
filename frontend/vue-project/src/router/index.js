@@ -10,7 +10,6 @@ import DormChange from '@/views/DormChange.vue'
 import ChangeProgress from '@/views/ChangeProgress.vue'
 import Feedback from '@/views/Feedback.vue'
 import StudentProfile from '@/views/StudentProfile.vue'
-import AvatarTest  from '@/views/AvatarTest.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

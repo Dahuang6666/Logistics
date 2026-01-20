@@ -151,7 +151,7 @@ export default {
     // 加载投诉建议列表
     async loadFeedbackList() {
       this.loading = true
-      const userNo = localStorage.getItem('userNo')
+      const userNo = sessionStorage.getItem('userNo')
 
       if (!userNo) {
         ElMessage.error('用户信息获取失败，请重新登录')
