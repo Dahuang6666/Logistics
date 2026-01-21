@@ -75,21 +75,20 @@ const router = createRouter({
     }
   ]
 })
-// 全局前置守卫
+// 全局前置守卫 - 修复后的逻辑
 router.beforeEach((to, from, next) => {
-  // 判断目标路由是否需要认证
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  // 从 localStorage 获取 token
+  // 从 sessionStorage 获取 token
   const isAuthenticated = !!sessionStorage.getItem('token')
 
-  if (requiresAuth && !isAuthenticated) {
-    // 需要登录但未登录 → 跳转到登录页
-    next('/')
-  } else if (!requiresAuth && isAuthenticated && to.path === '/') {
-    // 已登录用户访问登录页 → 自动跳转到学生主页（可选优化）
-    next('/student')
+  // 核心逻辑：只对需要权限的页面校验登录状态
+  if (to.meta.requiresAuth) {
+    // 访问需要权限的页面：已登录则放行，未登录则跳登录页
+    if (isAuthenticated) {
+      next()
+    } else {
+      next('/') // 未登录跳登录页
+    }
   } else {
-    // 其他情况正常放行
     next()
   }
 })

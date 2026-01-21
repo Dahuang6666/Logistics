@@ -189,7 +189,7 @@ export default {
           ElMessage.success('图片上传成功')
         } else {
           loadingMsg.close()
-          ElMessage.error(response.data.msg || '图片上传失败')
+          ElMessage.error(response.data.msg )
         }
       } catch (error) {
         console.error('上传图片失败:', error)

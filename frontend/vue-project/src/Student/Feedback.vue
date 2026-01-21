@@ -68,8 +68,8 @@
           </span>
         </div>
 
-        <!-- 管理员回复 -->
-        <div v-if="item.reply" class="feedback-reply">
+        <!-- 管理员回复 - 修改条件 -->
+        <div v-if="item.status === '已处理' && item.reply" class="feedback-reply">
           <div class="reply-header">💬 管理员回复：</div>
           <div class="reply-content">{{ item.reply }}</div>
         </div>
@@ -183,7 +183,7 @@ export default {
         return
       }
 
-      const userNo = localStorage.getItem('userNo')
+      const userNo = sessionStorage.getItem('userNo')
       if (!userNo) {
         ElMessage.error('用户信息获取失败，请重新登录')
         return
@@ -202,7 +202,7 @@ export default {
           this.closeSubmitModal()
           this.loadFeedbackList() // 刷新列表
         } else {
-          ElMessage.error(response.data.msg || '提交失败')
+          ElMessage.error(response.data.msg)
         }
       } catch (error) {
         console.error('提交投诉建议失败:', error)

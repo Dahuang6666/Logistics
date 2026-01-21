@@ -104,14 +104,14 @@ export default {
     }
   },
   async mounted() {
-    this.userNo = localStorage.getItem('userNo') || ''
+    this.userNo =  sessionStorage.getItem('userNo') || ''
     await this.loadUserName()
     await this.checkFirstLoginStatus()  // 检查是否首次登录
   },
   methods: {
     // 加载用户名
     loadUserName() {
-      const userName = localStorage.getItem('userName')  // 直接读取用户名
+      const userName =  sessionStorage.getItem('userName')  // 直接读取用户名
       if (userName) {
         this.userName = userName
       } else {

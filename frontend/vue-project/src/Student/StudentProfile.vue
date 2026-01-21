@@ -1,15 +1,11 @@
 <template>
   <div class="profile-container">
-    <div class="page-header">
-      <h1 class="page-title">👤 个人中心</h1>
-    </div>
 
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
       <p>加载中...</p>
     </div>
-
     <!-- 个人资料内容 -->
     <div v-else class="profile-content">
       <!-- 第一行:个人信息 + 宿舍信息 -->
