@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -174,5 +177,44 @@ public class StudentServiceImpl implements StudentService {
         }
 
         return Result.success(profile);
+    }
+
+    @Override
+    public String uploadAvatar(MultipartFile file) {
+        // 获取文件扩展名
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+
+        // 生成随机文件名
+        String newFileName ="repair_"+ UUID.randomUUID().toString() + fileExtension;
+
+        // 构造保存路径（项目根目录下的 /imgs 文件夹）
+        String rootPath = System.getProperty("user.dir");
+        File imgsDir = new File(rootPath, "/src/main/resources/static/imgs");
+        if (!imgsDir.exists()) {
+            imgsDir.mkdirs();
+        }
+
+        File destFile = new File(imgsDir, newFileName);
+        try {
+            file.transferTo(destFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 构造图片 URL（假设静态资源映射到 /imgs/**）
+        return  "http://localhost:8080/imgs/" + newFileName;
+    }
+
+    @Override
+    // 根据学号获取宿舍ID
+    public Result getDormitoryIdByUserNo(String userNo) {
+        Integer dormitoryId = studentMapper.getDormitoryIdByUserNo(userNo);
+
+        if (dormitoryId != null) {
+            return Result.success(dormitoryId);
+        } else {
+            return Result.error("未找到宿舍信息");
+        }
     }
 }

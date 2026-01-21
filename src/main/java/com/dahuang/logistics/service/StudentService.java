@@ -4,6 +4,7 @@ import com.dahuang.logistics.dto.DormChangeApplicationDTO;
 import com.dahuang.logistics.dto.RepairApplicationDTO;
 import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.vo.AnnouncementVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -36,4 +37,8 @@ public interface StudentService {
     Result submitFirstDormInfo(String userNo, Integer buildingId, String dormitoryNo);
 
     Result getStudentProfile(String userNo);
+
+    String uploadAvatar(MultipartFile file);
+
+    Result getDormitoryIdByUserNo(String userNo);
 }

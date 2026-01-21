@@ -588,6 +588,7 @@ export default {
   margin-bottom: 8px;
 }
 
+
 .form-input {
   width: 100%;
   padding: 10px 15px;
@@ -595,6 +596,7 @@ export default {
   border-radius: 6px;
   font-size: 14px;
   transition: all 0.3s;
+  box-sizing: border-box;
 }
 
 .form-input:focus {

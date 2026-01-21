@@ -225,3 +225,39 @@ export function getAvatarUrl(userNo) {
 export function updateUserProfile(data) {
   return request.put('/school/user/updateUserInfo', data);
 }
+
+/**
+ * 上传报修图片 (新增功能，根据后端代码)
+ * @param {File} file - 报修图片文件
+ * @returns {Promise}
+ */
+export function uploadRepairImage(file) { // 新增函数名
+  const formData = new FormData();
+  formData.append('file', file);
+  return request.post('/school/student/uploadAvatar', formData, { // 根据后端代码，路径为 /school/student/uploadAvatar
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
+
+
+/**
+ * 提交报修申请
+ * @param {Object} data - { userNo, dormitoryId, content, imageUrl}
+ * @returns {Promise}
+ */
+export function submitRepair(data) {
+  return request.post('/school/student/submitRepair', data);
+}
+
+/**
+ * 根据学号获取宿舍ID
+ * @param {string} userNo - 学号
+ * @returns {Promise}
+ */
+export function getDormitoryId(userNo) {
+  return request.get('/school/student/getDormitoryId', {
+    params: { userNo }
+  });
+}

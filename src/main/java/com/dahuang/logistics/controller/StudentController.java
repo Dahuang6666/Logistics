@@ -8,6 +8,7 @@ import com.dahuang.logistics.service.StudentService;
 import com.dahuang.logistics.vo.AnnouncementVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +71,17 @@ public class StudentController {
             return Result.error("提交失败");
         }
     }
+
+    //上传报修图片
+    @PostMapping("/uploadAvatar")
+    public Result uploadAvatar(@RequestParam("file") MultipartFile file) {
+        try {
+            String avatarUrl = studentService.uploadAvatar(file);
+            return Result.success(avatarUrl); // 返回图片地址
+        } catch (Exception e) {
+            return Result.error("报修图片上传失败");
+        }
+    }
     // 学生查询自己的报修单
     @GetMapping("/myRepairs")
     public Result getMyRepairs(@RequestParam String userNo) {
@@ -120,6 +132,12 @@ public class StudentController {
     @GetMapping("/getStudentProfile")
     public Result getStudentProfile(@RequestParam String userNo) {
         return studentService.getStudentProfile(userNo);
+    }
+
+    // 根据学号获取宿舍ID
+    @GetMapping("/getDormitoryId")
+    public Result getDormitoryId(@RequestParam String userNo) {
+        return studentService.getDormitoryIdByUserNo(userNo);
     }
 
 }

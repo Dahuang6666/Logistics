@@ -91,10 +91,13 @@ public class UserServiceImpl implements UserService {
     public String uploadAvatar(String userNo, MultipartFile file) throws IOException {
         // 获取文件扩展名
         String originalFilename = file.getOriginalFilename();
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileExtension = null;
+        if (originalFilename != null) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
 
         // 生成随机文件名
-        String newFileName = UUID.randomUUID().toString() + fileExtension;
+        String newFileName ="user_" + UUID.randomUUID().toString() + fileExtension;
 
         // 构造保存路径（项目根目录下的 /imgs 文件夹）
         String rootPath = System.getProperty("user.dir");

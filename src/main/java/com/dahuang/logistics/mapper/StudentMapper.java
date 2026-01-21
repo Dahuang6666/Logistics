@@ -118,5 +118,12 @@ public interface StudentMapper {
             @Param("currentUserNo") String currentUserNo
     );
 
-
+    // 根据学号查询宿舍ID
+    @Select("SELECT d.dormitory_id " +
+            "FROM student_dormitory_info sdi " +
+            "INNER JOIN dormitory d ON sdi.building_id = d.building_id " +
+            "  AND sdi.dormitory_number = d.dormitory_no " +
+            "WHERE sdi.user_no = #{userNo} " +
+            "  AND sdi.is_info_completed = 1")
+    Integer getDormitoryIdByUserNo(String userNo);
 }
