@@ -16,8 +16,7 @@ public interface StudentService {
     List<DormChangeApplication> getApplicationsByStudent(String studentNo);
 
     boolean createRepair(RepairApplicationDTO dto);
-
-    List<RepairApplication> getRepairsByUser(String userNo);
+    
 
     List<AnnouncementVO> getAnnouncementList(int pageNum, int pageSize,Integer priority,String searchKeyword);
 
@@ -41,4 +40,8 @@ public interface StudentService {
     String uploadAvatar(MultipartFile file);
 
     Result getDormitoryIdByUserNo(String userNo);
+
+    PageBean getRepairsByUser(String userNo, Integer pageNum, Integer pageSize, String status);
+
+    Result cancelRepair(Integer repairId, String userNo);
 }

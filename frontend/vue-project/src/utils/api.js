@@ -261,3 +261,23 @@ export function getDormitoryId(userNo) {
     params: { userNo }
   });
 }
+
+  /**
+   * 获取我的报修列表(分页)
+   * @param {Object} params - { userNo, pageNum, pageSize, status? }
+   */
+  export function getMyRepairs(params) {
+    return request.get('/school/student/myRepairs', { params });
+  }
+
+  /**
+   * 撤销报修
+   * @param {number} repairId - 报修单ID
+   * @param {string} userNo - 用户学号
+   */
+  export function cancelRepair(repairId, userNo) {
+    return request.put('/school/student/cancelRepair', null, {
+      params: { repairId, userNo }
+    });
+  }
+

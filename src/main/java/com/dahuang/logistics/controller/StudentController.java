@@ -82,10 +82,23 @@ public class StudentController {
             return Result.error("报修图片上传失败");
         }
     }
-    // 学生查询自己的报修单
+
     @GetMapping("/myRepairs")
-    public Result getMyRepairs(@RequestParam String userNo) {
-        return Result.success(studentService.getRepairsByUser(userNo));
+    public Result getMyRepairs(
+            @RequestParam String userNo,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String status
+    ) {
+        return Result.success(studentService.getRepairsByUser(userNo, pageNum, pageSize, status));
+    }
+
+    @PutMapping("/cancelRepair")
+    public Result cancelRepair(
+            @RequestParam Integer repairId,
+            @RequestParam String userNo
+    ) {
+        return studentService.cancelRepair(repairId, userNo);
     }
 
     //公告查看

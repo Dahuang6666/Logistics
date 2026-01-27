@@ -61,10 +61,13 @@ public interface StudentMapper {
     int insertRepair(RepairApplication repairApplication);
 
 
+    List<RepairApplication> getRepairByUser(@Param("userNo") String userNo,
+                                            @Param("status") String status);
 
-    @Select("SELECT * FROM school_backend_manage.repair_application WHERE user_no = #{userNo} AND is_deleted = 0 ORDER BY create_time DESC")
-    List<RepairApplication> getRepairByUser(String userNo);
+    RepairApplication getRepairById(@Param("id") Integer id);
 
+
+    void cancelRepair(@Param("id") Integer id);
 
     List<AnnouncementVO> getAnnouncementList(@Param("offset") int offset, @Param("limit") int limit,Integer priority,String searchKeyword);
 

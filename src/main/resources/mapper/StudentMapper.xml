@@ -57,4 +57,32 @@
         </if>
     </select>
 
+
+    <!-- 获取学生的报修列表 -->
+    <select id="getRepairByUser" resultType="com.dahuang.logistics.entity.RepairApplication">
+        SELECT *
+        FROM school_backend_manage.repair_application
+        WHERE user_no = #{userNo}
+        AND is_deleted = 0
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据ID查询报修单 -->
+    <select id="getRepairById" resultType="com.dahuang.logistics.entity.RepairApplication">
+        SELECT *
+        FROM school_backend_manage.repair_application
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </select>
+
+    <!-- 撤销报修(软删除) -->
+    <update id="cancelRepair">
+        UPDATE school_backend_manage.repair_application
+        SET is_deleted = 1,
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
 </mapper>

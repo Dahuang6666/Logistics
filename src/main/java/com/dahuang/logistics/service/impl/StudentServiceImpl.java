@@ -8,6 +8,8 @@ import com.dahuang.logistics.mapper.UserMapper;
 import com.dahuang.logistics.service.StudentService;
 import com.dahuang.logistics.utils.AIAnnouncementService;
 import com.dahuang.logistics.vo.AnnouncementVO;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -72,9 +74,44 @@ public class StudentServiceImpl implements StudentService {
             return false;
         }
     }
+
     @Override
-    public List<RepairApplication> getRepairsByUser(String userNo) {
-        return studentMapper.getRepairByUser(userNo);
+    public PageBean getRepairsByUser(String userNo, Integer pageNum, Integer pageSize, String status) {
+        // 开启分页
+        PageHelper.startPage(pageNum, pageSize);
+
+        // 查询数据
+        List<RepairApplication> list = studentMapper.getRepairByUser(userNo, status);
+
+        // 获取分页结果
+        Page<RepairApplication> page = (Page<RepairApplication>) list;
+
+        // 返回分页数据
+        return new PageBean(page.getTotal(), page.getResult());
+    }
+
+    @Override
+    public Result cancelRepair(Integer repairId, String userNo) {
+        // 1. 验证报修单是否存在
+        RepairApplication repair = studentMapper.getRepairById(repairId);
+        if (repair == null) {
+            return Result.error("报修单不存在");
+        }
+
+        // 2. 验证是否是本人的报修单
+        if (!repair.getUserNo().equals(userNo)) {
+            return Result.error("无权操作此报修单");
+        }
+
+        // 3. 验证报修单状态(只能撤销待处理的)
+        if (!"待处理".equals(repair.getStatus())) {
+            return Result.error("只能撤销待处理的报修单");
+        }
+
+        // 4. 执行撤销(软删除)
+        studentMapper.cancelRepair(repairId);
+
+        return Result.success();
     }
 
     @Override
