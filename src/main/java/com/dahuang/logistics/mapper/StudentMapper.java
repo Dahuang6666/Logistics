@@ -1,6 +1,5 @@
 package com.dahuang.logistics.mapper;
 
-import com.dahuang.logistics.dto.DormChangeApplicationDTO;
 import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.vo.AnnouncementVO;
 import org.apache.ibatis.annotations.*;
@@ -48,11 +47,18 @@ public interface StudentMapper {
     @Update("UPDATE school_backend_manage.dormitory " +
             "SET available_beds = available_beds - 1 " +
             "WHERE dormitory_no = #{dormitoryNo} AND building_id = #{buildingId} AND available_beds > 0")
-    int decreaseDormitoryBeds(@Param("dormitoryNo") String dormitoryNo,
+    void decreaseDormitoryBeds(@Param("dormitoryNo") String dormitoryNo,
                               @Param("buildingId") Integer buildingId);
     //查看换宿舍申请
-    @Select("SELECT * FROM school_backend_manage.dorm_change_application WHERE student_no = #{studentNo} ORDER BY application_time DESC")
+    @Select("SELECT * FROM school_backend_manage.dorm_change_application WHERE student_no = #{studentNo} and dorm_change_application.is_deleted = 0 ORDER BY application_time DESC")
     List<DormChangeApplication> getApplicationsByStudent(String studentNo);
+
+
+    // 根据ID获取申请信息
+    DormChangeApplication getApplicationById(@Param("applicationId") Integer applicationId);
+
+    // 撤销申请（软删除）
+    int cancelDormApplication(@Param("applicationId") Integer applicationId);
 
     //维修
     @Insert("INSERT INTO school_backend_manage.repair_application " +
@@ -87,34 +93,11 @@ public interface StudentMapper {
     List<ComplaintSuggestion> getUserComplaints(@Param("userNo") String userNo);
 
     // 获取宿舍信息(联表查询)
-    @Select("SELECT " +
-            "sdi.building_id AS buildingId, " +
-            "sdi.dormitory_number AS dormitoryNumber, " +
-            "b.building_number AS buildingNumber, " +
-            "b.assigned_gender AS assignedGender, " +
-            "d.capacity, " +
-            "d.available_beds AS availableBeds, " +
-            "d.status " +
-            "FROM student_dormitory_info sdi " +
-            "LEFT JOIN build b ON sdi.building_id = b.id " +
-            "LEFT JOIN dormitory d ON sdi.building_id = d.building_id " +
-            "  AND sdi.dormitory_number = d.dormitory_no " +
-            "WHERE sdi.user_no = #{userNo} AND sdi.is_info_completed = 1")
+    @SuppressWarnings("MybatisXMapperMethodInspection")
     Map<String, Object> getDormInfoByUserNo(String userNo);
 
     // 获取室友列表
-    @Select("SELECT " +
-            "u.user_no AS userNo, " +
-            "u.username, " +
-            "u.gender, " +
-            "u.phone, " +
-            "u.email " +
-            "FROM user u " +
-            "INNER JOIN student_dormitory_info sdi ON u.user_no = sdi.user_no " +
-            "WHERE sdi.building_id = #{buildingId} " +
-            "  AND sdi.dormitory_number = #{dormitoryNumber} " +
-            "  AND u.user_no != #{currentUserNo} " +
-            "ORDER BY u.user_no")
+    @SuppressWarnings("MybatisXMapperMethodInspection")
     List<Map<String, Object>> getRoommatesByDormInfo(
             @Param("buildingId") Integer buildingId,
             @Param("dormitoryNumber") String dormitoryNumber,
@@ -122,11 +105,9 @@ public interface StudentMapper {
     );
 
     // 根据学号查询宿舍ID
-    @Select("SELECT d.dormitory_id " +
-            "FROM student_dormitory_info sdi " +
-            "INNER JOIN dormitory d ON sdi.building_id = d.building_id " +
-            "  AND sdi.dormitory_number = d.dormitory_no " +
-            "WHERE sdi.user_no = #{userNo} " +
-            "  AND sdi.is_info_completed = 1")
     Integer getDormitoryIdByUserNo(String userNo);
+
+    String getCurrentDormInfo(String studentNo);
+
+    String getDormNameById(Integer dormitoryId);
 }

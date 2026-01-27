@@ -1,7 +1,7 @@
 <template>
   <div class="announcement-view">
     <div class="page-header">
-      <h1 class="page-title">公告通知</h1>
+      <h1 class="page-title">📢 公告通知</h1>
     </div>
 
     <div class="filter-bar">

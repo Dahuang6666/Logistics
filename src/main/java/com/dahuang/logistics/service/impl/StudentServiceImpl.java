@@ -36,9 +36,7 @@ public class StudentServiceImpl implements StudentService {
         DormChangeApplication dormChangeApplication = new DormChangeApplication();
         BeanUtils.copyProperties(dormChangeApplicationDTO, dormChangeApplication);
         dormChangeApplication.setApplicationTime(new Date());
-        dormChangeApplication.setTargetDormitoryId(000);
-        int r= studentMapper.submitApplication(dormChangeApplication);
-        return r;
+        return studentMapper.submitApplication(dormChangeApplication);
     }
 
     @Override
@@ -254,4 +252,37 @@ public class StudentServiceImpl implements StudentService {
             return Result.error("未找到宿舍信息");
         }
     }
+
+    @Override
+    public int cancelDormApplication(Integer applicationId, String studentNo) {
+        // 先查询申请信息，验证状态和所属人
+        DormChangeApplication application = studentMapper.getApplicationById(applicationId);
+
+        if (application == null) {
+            throw new RuntimeException("申请不存在");
+        }
+
+        if (!application.getStudentNo().equals(studentNo)) {
+            throw new RuntimeException("无权操作此申请");
+        }
+
+        if (!"PENDING".equals(application.getStatus())) {
+            throw new RuntimeException("只有待审批状态的申请可以撤销");
+        }
+
+        // 执行撤销操作（软删除）
+        return studentMapper.cancelDormApplication(applicationId);
+    }
+
+    @Override
+    public String getCurrentDormInfo(String studentNo) {
+        return studentMapper.getCurrentDormInfo(studentNo);
+    }
+
+    @Override
+    public String getDormNameById(Integer dormitoryId) {
+        return studentMapper.getDormNameById(dormitoryId);
+    }
+
+
 }

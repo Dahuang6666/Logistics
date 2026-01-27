@@ -231,10 +231,10 @@ export function updateUserProfile(data) {
  * @param {File} file - 报修图片文件
  * @returns {Promise}
  */
-export function uploadRepairImage(file) { // 新增函数名
+export function uploadRepairImage(file) {
   const formData = new FormData();
   formData.append('file', file);
-  return request.post('/school/student/uploadAvatar', formData, { // 根据后端代码，路径为 /school/student/uploadAvatar
+  return request.post('/school/student/uploadAvatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -281,3 +281,59 @@ export function getDormitoryId(userNo) {
     });
   }
 
+
+/**
+ * 提交换宿申请
+ * @param {Object} data - { studentNo, currentDormitoryId, targetDormitoryId, reason }
+ * @returns {Promise}
+ */
+export function submitDormChangeApplication(data) {
+  return request.post('/school/student/application', data);
+}
+
+/**
+ * 获取我的换宿申请列表
+ * @returns {Promise}
+ * @param studentNo 学号
+ */
+export function getMyDormApplications(studentNo) {
+  return request.get('/school/student/getMyDormApplications', {
+    params: { studentNo }
+  });
+}
+
+/**
+ * 撤销换宿申请
+ * @param {number} applicationId - 申请ID
+ * @param {string} studentNo - 学号
+ * @returns {Promise}
+ */
+export function cancelDormApplication(applicationId, studentNo) {
+  return request.put('/school/student/cancelDormApplication', null, {
+    params: { applicationId, studentNo }
+  });
+}
+
+/**
+ * 获取宿舍信息
+ * @param {string} studentNo - 学号
+ * @returns {Promise}
+ */
+export function getCurrentDormInfo(studentNo) {
+  return request.get('/school/student/getCurrentDormInfo', {
+    params: { studentNo }
+  });
+}
+
+
+
+/**
+ * 获取宿舍信息
+ * @param {string} dormitoryId - 宿舍id
+ * @returns {Promise}
+ */
+export function getDormNameById(dormitoryId) {
+  return request.get('/school/student/getDormNameById', {
+    params: {dormitoryId }
+  });
+}

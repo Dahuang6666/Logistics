@@ -200,7 +200,7 @@ export default {
         if (response.data.code === 1) {
           ElMessage.success('提交成功！我们会尽快处理')
           this.closeSubmitModal()
-          this.loadFeedbackList() // 刷新列表
+          await this.loadFeedbackList() // 刷新列表
         } else {
           ElMessage.error(response.data.msg)
         }

@@ -44,4 +44,10 @@ public interface StudentService {
     PageBean getRepairsByUser(String userNo, Integer pageNum, Integer pageSize, String status);
 
     Result cancelRepair(Integer repairId, String userNo);
+
+    int cancelDormApplication(Integer applicationId, String studentNo);
+
+    String getCurrentDormInfo(String studentNo);
+
+    String getDormNameById(Integer dormitoryId);
 }

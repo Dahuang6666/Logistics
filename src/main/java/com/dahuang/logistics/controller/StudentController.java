@@ -62,6 +62,15 @@ public class StudentController {
         List<DormChangeApplication> list = studentService.getApplicationsByStudent(studentNo);
         return Result.success(list);
     }
+
+// 撤销换宿申请
+    @PutMapping("/cancelDormApplication")
+    public Result cancelDormApplication(@RequestParam Integer applicationId,
+                                        @RequestParam String studentNo) {
+        int result = studentService.cancelDormApplication(applicationId, studentNo);
+        return result > 0 ? Result.success("撤销申请成功") : Result.error("撤销失败");
+    }
+
     //学生报修申请
     @PostMapping("/submitRepair")
     public Result submitRepair(@RequestBody RepairApplicationDTO dto) {
@@ -151,6 +160,18 @@ public class StudentController {
     @GetMapping("/getDormitoryId")
     public Result getDormitoryId(@RequestParam String userNo) {
         return studentService.getDormitoryIdByUserNo(userNo);
+    }
+
+    //根据学号获取宿舍信息
+    @GetMapping("/getCurrentDormInfo")
+    public Result getCurrentDormInfo(@RequestParam String studentNo) {
+        String dormInfo = studentService.getCurrentDormInfo(studentNo);
+        return Result.success(dormInfo);
+    }
+    @GetMapping("/getDormNameById")
+    public Result getDormNameById(@RequestParam Integer dormitoryId) {
+        String dormName = studentService.getDormNameById(dormitoryId);
+        return Result.success(dormName);
     }
 
 }

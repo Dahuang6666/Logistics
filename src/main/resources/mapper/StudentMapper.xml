@@ -56,6 +56,23 @@
             AND a.title LIKE CONCAT('%', #{searchKeyword}, '%')
         </if>
     </select>
+    <!-- 获取宿舍信息(联表查询) -->
+    <select id="getDormInfoByUserNo" resultType="java.util.Map" parameterType="string">
+        SELECT
+            sdi.building_id AS buildingId,
+            sdi.dormitory_number AS dormitoryNumber,
+            b.building_number AS buildingNumber,
+            b.assigned_gender AS assignedGender,
+            d.capacity,
+            d.available_beds AS availableBeds,
+            d.status
+        FROM student_dormitory_info sdi
+                 LEFT JOIN build b ON sdi.building_id = b.id
+                 LEFT JOIN dormitory d ON sdi.building_id = d.building_id
+            AND sdi.dormitory_number = d.dormitory_no
+        WHERE sdi.user_no = #{userNo}
+          AND sdi.is_info_completed = 1
+    </select>
 
 
     <!-- 获取学生的报修列表 -->
@@ -85,4 +102,55 @@
             update_time = NOW()
         WHERE id = #{id}
     </update>
+
+
+    <select id="getApplicationById" resultType="com.dahuang.logistics.entity.DormChangeApplication">
+        SELECT application_id, student_no, current_dormitory_id, target_dormitory_id,
+               reason, application_time, status, approval_time, approver_no, comment
+        FROM school_backend_manage.dorm_change_application
+        WHERE application_id = #{applicationId} AND is_deleted = 0
+    </select>
+
+    <!-- 撤销申请（软删除） -->
+    <update id="cancelDormApplication">
+        UPDATE school_backend_manage.dorm_change_application
+        SET is_deleted = 1
+        WHERE application_id = #{applicationId}
+    </update>
+
+    <select id="getRoommatesByDormInfo" resultType="java.util.Map">
+        SELECT u.user_no AS userNo, u.username, u.gender, u.phone, u.email
+        FROM user u
+                 INNER JOIN student_dormitory_info sdi ON u.user_no = sdi.user_no
+        WHERE sdi.building_id = #{buildingId}
+          AND sdi.dormitory_number = #{dormitoryNumber}
+          AND u.user_no != #{currentUserNo}
+    </select>
+
+    <select id="getDormitoryIdByUserNo"
+            parameterType="string"
+            resultType="java.lang.Integer">
+        SELECT d.dormitory_id
+        FROM student_dormitory_info sdi
+                 INNER JOIN dormitory d
+                            ON sdi.building_id = d.building_id
+                                AND sdi.dormitory_number = d.dormitory_no
+        WHERE sdi.user_no = #{userNo}
+          AND sdi.is_info_completed = 1
+    </select>
+    <select id="getCurrentDormInfo" resultType="java.lang.String">
+        SELECT CONCAT(b.building_number, '号楼-', sdi.dormitory_number) AS dormInfo
+        FROM student_dormitory_info sdi
+                 LEFT JOIN build b ON sdi.building_id = b.id
+        WHERE sdi.user_no = #{studentNo}
+    </select>
+
+
+    <select id="getDormNameById" resultType="java.lang.String">
+        SELECT CONCAT(b.building_number, '号楼-', d.dormitory_no) AS dormName
+        FROM dormitory d
+                 LEFT JOIN build b ON d.building_id = b.id
+        WHERE d.dormitory_id = #{dormitoryId}
+    </select>
+
 </mapper>
