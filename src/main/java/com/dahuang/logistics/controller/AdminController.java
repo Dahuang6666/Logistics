@@ -52,12 +52,14 @@ public class AdminController {
     //处理建议
     @PutMapping("/handle")
     public Result handle(@RequestBody ComplaintSuggestion cs) {
-        return adminService.handleComplaint(cs) > 0 ? Result.success() : Result.error("处理失败");
+        return adminService.handleComplaint(cs) > 0 ?
+                Result.success() : Result.error("处理失败");
     }
    //删除建议
     @DeleteMapping("/deleteSuggest/{id}")
     public Result deleteSuggest(@RequestParam Integer id) {
-        return adminService.deleteComplaint(id) > 0 ? Result.success() : Result.error("删除失败");
+        return adminService.deleteComplaint(id) > 0 ?
+                Result.success() : Result.error("删除失败");
     }
     //报修数量统计
     @GetMapping("/repairCount")
@@ -73,7 +75,7 @@ public class AdminController {
         return Result.success(stats);
     }
 
-   //宿舍申请
+   //宿舍申请数量
     @GetMapping("/dormCountByStatus")
     public Result countByStatus() {
         List<Map<String, Object>> stats = adminService.getDormChangeStatusStats();

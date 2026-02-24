@@ -91,7 +91,7 @@ public class StudentController {
             return Result.error("报修图片上传失败");
         }
     }
-
+//获取用户所有申请
     @GetMapping("/myRepairs")
     public Result getMyRepairs(
             @RequestParam String userNo,
@@ -101,7 +101,7 @@ public class StudentController {
     ) {
         return Result.success(studentService.getRepairsByUser(userNo, pageNum, pageSize, status));
     }
-
+    //取消报修申请
     @PutMapping("/cancelRepair")
     public Result cancelRepair(
             @RequestParam Integer repairId,
@@ -142,7 +142,8 @@ public class StudentController {
 //提交建议
     @PostMapping("/submitSuggest")
     public Result submit(@RequestBody ComplaintSuggestion cs) {
-        return studentService.insertComplaint(cs) > 0 ? Result.success() : Result.error("提交失败");
+        return studentService.insertComplaint(cs) > 0 ?
+                Result.success() : Result.error("提交失败");
     }
 //获取建议
     @GetMapping("/mySuggestList")

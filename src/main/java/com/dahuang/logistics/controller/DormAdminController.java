@@ -23,33 +23,23 @@ public class DormAdminController {
     private DormAdminService dormAdminService;
      @Autowired
      private AIAnnouncementService aiAnnouncementService;
-    //获取待审批所有申请
+    //获取待审批所有变更宿舍申请
     @GetMapping("/getAllApplication")
      public Result getPENDINGApplication(){
-        List<DormChangeApplicationVO> dormChangeApplicationVO=dormAdminService.getAllApplication();
+        List<DormChangeApplicationVO> dormChangeApplicationVO
+                = dormAdminService.getAllApplication();
         return Result.success(dormChangeApplicationVO);
     }
-//写公告
-    @PostMapping("/getchat")
-    public String getAIAnnouncement(@RequestBody AIAnnouncement dto) {
-        return aiAnnouncementService.generateAnnouncement(
-                dto.getTopic(),
-                dto.getPublisher(),
-                dto.getPublishDate(),
-                dto.getSummary()
-        );
-    }
-    //更新申请
+    //更新变更宿舍申请状态
     @PostMapping("/updateApplicationStatus")
     public Result updateApplicationStatus(@RequestBody ApplicationStatusRequest request) {
         DormChangeApplication application = new DormChangeApplication();
         BeanUtils.copyProperties(request,application);
         application.setApprovalTime(new Date());
-
         boolean success = dormAdminService.updateApplication(application);
         return success ? Result.success("状态更新成功") : Result.error("状态更新失败");
     }
-    //根据状态获取更新信息
+    //根据状态获取变更宿舍信息
     @GetMapping("/getApplicationList")
     public Result getApplicationList(@RequestParam(required = false) String status) {
         List<DormChangeApplicationVO> list = dormAdminService.getApplicationList(status);
@@ -71,7 +61,7 @@ public class DormAdminController {
             return Result.error("状态更新失败");
         }
     }
-    // 管理员删除（软删除）
+    // 管理员删除报修（软删除）
     @DeleteMapping("/delete")
     public Result deleteRepair(@RequestParam Integer id) {
         if (dormAdminService.deleteRepair(id)) {
@@ -86,6 +76,16 @@ public class DormAdminController {
 //        List<Announcement> list = dormAdminService.getAllAnnouncements();
 //        return Result.success(list);
 //    }
+     //写公告
+    @PostMapping("/getchat")
+    public String getAIAnnouncement(@RequestBody AIAnnouncement dto) {
+        return aiAnnouncementService.generateAnnouncement(
+            dto.getTopic(),
+            dto.getPublisher(),
+            dto.getPublishDate(),
+            dto.getSummary()
+       );
+    }
 
     // 修改公告
     @PutMapping("/updateAnnouncement")
