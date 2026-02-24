@@ -1,192 +1,86 @@
 <template>
   <div class="dashboard-container">
-    <!-- 顶部导航栏 -->
     <div class="header">
       <div class="logo">🏠 宿舍管理系统</div>
       <div class="user-info">
-        <span class="user-name">👤 {{ userName }} | 学生</span>
+        <span class="user-name">👤 {{ userName }} | 系统管理员</span>
         <button class="logout-btn" @click="handleLogout">退出</button>
       </div>
     </div>
 
-    <!-- 左侧边栏 -->
     <div class="sidebar">
       <div class="menu-section">
-        <div class="menu-title">学生功能</div>
+        <div class="menu-title">管理主菜单</div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'announcement' }"
-          @click="switchMenu('announcement')"
+          :class="{ active: currentRoute === '/admin/user' }"
+          @click="navigateTo('/admin/user')"
         >
-          📢 公告通知
+          👥 用户管理
         </div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'dorm' }"
-          @click="switchMenu('dorm')"
+          :class="{ active: currentRoute === '/admin/announcement' }"
+          @click="navigateTo('/admin/announcement')"
         >
-          🏢 宿舍信息
+          📢 公告管理
         </div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'repair' }"
-          @click="switchMenu('repair')"
+          :class="{ active: currentRoute === '/admin/dormitory' }"
+          @click="navigateTo('/admin/dormitory')"
         >
-          🔧 报修申请
+          🏢 宿舍管理
         </div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'repairProgress' }"
-          @click="switchMenu('repairProgress')"
+          :class="{ active: currentRoute === '/admin/repair' }"
+          @click="navigateTo('/admin/repair')"
         >
-          📋 报修进度
+          🔧 报修管理
         </div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'dormChange' }"
-          @click="switchMenu('dormChange')"
+          :class="{ active: currentRoute === '/admin/dorm-change' }"
+          @click="navigateTo('/admin/dorm-change')"
         >
-          🔄 宿舍变更申请
+          🔄 宿舍变更管理
         </div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'changeProgress' }"
-          @click="switchMenu('changeProgress')"
+          :class="{ active: currentRoute === '/admin/feedback' }"
+          @click="navigateTo('/admin/feedback')"
         >
-          📊 宿舍变更进度
+          💬 投诉建议处理
         </div>
+
         <div
           class="menu-item"
-          :class="{ active: currentMenu === 'feedback' }"
-          @click="switchMenu('feedback')"
+          :class="{ active: currentRoute === '/admin/statistics' }"
+          @click="navigateTo('/admin/statistics')"
         >
-          💬 投诉与建议
+          📊 数据统计与分析
         </div>
       </div>
     </div>
 
-    <!-- 主内容区 -->
     <div class="main-content">
       <div class="content-card">
-        <!-- 公告通知页面 -->
-        <div v-if="currentMenu === 'announcement'">
-          <div class="page-header">
-            <h1 class="page-title">公告通知</h1>
-          </div>
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
 
-          <div class="filter-bar">
-            <input
-              type="text"
-              class="search-box"
-              placeholder="🔍 搜索公告..."
-              v-model="searchKeyword"
-              @input="handleSearch"
-            >
-            <button
-              class="filter-btn"
-              :class="{ active: filterType === 'all' }"
-              @click="handleFilter('all')"
-            >
-              全部
-            </button>
-            <button
-              class="filter-btn"
-              :class="{ active: filterType === '紧急通知' }"
-              @click="handleFilter('紧急通知')"
-            >
-              紧急通知
-            </button>
-            <button
-              class="filter-btn"
-              :class="{ active: filterType === '安全提醒' }"
-              @click="handleFilter('安全提醒')"
-            >
-              安全提醒
-            </button>
-            <button
-              class="filter-btn"
-              :class="{ active: filterType === '温馨提示' }"
-              @click="handleFilter('温馨提示')"
-            >
-              温馨提示
-            </button>
-          </div>
-
-          <!-- 加载状态 -->
-          <div v-if="loading" class="loading-container">
-            <div class="loading-spinner"></div>
-            <p>加载中...</p>
-          </div>
-
-          <!-- 公告列表 -->
-          <div v-else-if="announcementList.length > 0" class="notice-list">
-            <div
-              v-for="item in announcementList"
-              :key="item.id"
-              class="notice-item"
-            >
-            <div class="notice-header">
-                <span
-                  class="notice-tag"
-                  :class="getTagClass(item.announcementTypeName)"
-                >
-                  {{ item.announcementTypeName }}
-                </span>
-                <span class="notice-title">{{ item.title }}</span>
-              </div>
-              <div class="notice-content">{{ item.content }}</div>
-              <div class="notice-meta">
-                <span>
-                  📅 {{ formatDate(item.publishTime) }} |
-                  👤 {{ item.publisher }}
-                </span>
-                <button class="detail-btn" @click="viewDetail(item)">查看详情</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 空状态 -->
-          <div v-else class="empty-state">
-            <div class="empty-icon">📭</div>
-            <p>暂无公告信息</p>
-          </div>
-
-          <!-- 分页 -->
-          <div v-if="total > 0" class="pagination">
-            <div class="page-info">共 {{ total }} 条记录</div>
-            <div class="page-buttons">
-              <button
-                class="page-btn"
-                :disabled="currentPage === 1"
-                @click="changePage(currentPage - 1)"
-              >
-                &lt;
-              </button>
-              <button
-                v-for="page in totalPages"
-                :key="page"
-                class="page-btn"
-                :class="{ active: currentPage === page }"
-                @click="changePage(page)"
-              >
-                {{ page }}
-              </button>
-              <button
-                class="page-btn"
-                :disabled="currentPage === totalPages"
-                @click="changePage(currentPage + 1)"
-              >
-                &gt;
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 其他菜单的占位内容 -->
-        <div v-else class="placeholder-content">
-          <div class="placeholder-icon">🚧</div>
-          <h2>{{ getMenuTitle(currentMenu) }}</h2>
-          <p>该功能正在开发中，敬请期待...</p>
+        <div v-if="!$route.name" class="placeholder-box">
+          <h2>欢迎进入管理员后台</h2>
+          <p>请从左侧菜单选择要管理的模块</p>
         </div>
       </div>
     </div>
@@ -195,116 +89,42 @@
 
 <script>
 import { ElMessage } from 'element-plus'
-import { getAnnouncementList } from '@/utils/api.js'
 
 export default {
-  name: 'StudentDashboard',
+  name: 'AdminDashboard',
   data() {
     return {
-      userName: localStorage.getItem('userName') || '学生',
-      currentMenu: 'announcement',
-      searchKeyword: '',
-      filterType: 'all',
-      loading: false,
-      announcementList: [],
-      currentPage: 1,
-      pageSize: 10,
-      total: 0
+      userName: sessionStorage.getItem('userName') || 'Admin',
+      currentRoute: this.$route.path
     }
   },
-  computed: {
-    totalPages() {
-      return Math.ceil(this.total / this.pageSize)
+  watch: {
+    $route(to) {
+      this.currentRoute = to.path
     }
-  },
-  mounted() {
-    this.loadAnnouncementList()
   },
   methods: {
-    // 加载公告列表
-    async loadAnnouncementList() {
-      this.loading = true
-      try {
-        const res = await getAnnouncementList(
-          this.currentPage,
-          this.pageSize,
-          this.priority,
-          this.searchKeyword
-        )
-
-        if (res.data.code === 1) {
-          this.announcementList = res.data.data.list || []
-          this.total = res.data.data.total || 0
-        } else {
-          ElMessage.error(res.data.msg )
-        }
-      } catch (e) {
-        console.error(e)
-        ElMessage.error('网络错误')
-      } finally {
-        this.loading = false
+    // 路由导航逻辑
+    navigateTo(path) {
+      if (this.$route.path !== path) {
+        this.$router.push(path)
       }
-    },
-    // 翻页
-    changePage(page) {
-      if (page < 1 || page > this.totalPages) return
-      this.currentPage = page
-      this.loadAnnouncementList()
-    },
-
-    // 查看详情
-    viewDetail(item) {
-      ElMessage.info(`查看公告详情: ${item.title}`)
     },
 
     // 退出登录
     handleLogout() {
-      if (confirm('确定要退出登录吗？')) {
-        localStorage.clear()
+      if (confirm('确定要退出管理员系统吗？')) {
+        sessionStorage.clear()
         this.$router.push('/')
         ElMessage.success('已退出登录')
       }
-    },
-
-    // 获取标签样式类名
-    getTagClass(typeName) {
-      const typeMap = {
-        '紧急通知': 'tag-urgent',
-        '安全提醒': 'tag-safety',
-        '制度通知': 'tag-rule',
-        '日常通知': 'tag-normal',
-        '活动公告': 'tag-activity',
-        '温馨提示': 'tag-tip'
-      }
-      return typeMap[typeName] || 'tag-default'
-    },
-
-    // 格式化日期
-    formatDate(dateString) {
-      const date = new Date(dateString)
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
-    },
-
-    // 获取菜单标题
-    getMenuTitle(menu) {
-      const titles = {
-        'dorm': '宿舍信息',
-        'repair': '报修申请',
-        'repairProgress': '报修进度',
-        'dormChange': '宿舍变更申请',
-        'changeProgress': '宿舍变更进度',
-        'feedback': '投诉与建议'
-      }
-      return titles[menu] || ''
     }
   }
 }
 </script>
 
 <style scoped>
+/* 继承你提供的样式，确保风格一致 */
 * {
   margin: 0;
   padding: 0;
@@ -426,233 +246,25 @@ export default {
   min-height: 100%;
 }
 
-.page-header {
-  margin-bottom: 30px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-/* 搜索和筛选 */
-.filter-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.search-box {
-  flex: 1;
-  min-width: 200px;
-  max-width: 300px;
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.filter-btn {
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  background: white;
-  color: #7f8c8d;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.3s;
-}
-
-.filter-btn.active {
-  background: #3498db;
-  color: white;
-  border-color: #3498db;
-}
-
-.filter-btn:hover {
-  border-color: #3498db;
-}
-
-/* 加载状态 */
-.loading-container {
+.placeholder-box {
   text-align: center;
-  padding: 60px 20px;
-  color: #7f8c8d;
+  padding-top: 100px;
+  color: #bdc3c7;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+/* 页面切换动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.fade-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
 }
 
-/* 公告列表 */
-.notice-list {
-  margin-bottom: 20px;
-}
-
-.notice-item {
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  padding: 20px;
-  margin-bottom: 15px;
-  transition: all 0.3s;
-}
-
-.notice-item:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.notice-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
-}
-
-.notice-tag {
-  padding: 4px 12px;
-  border-radius: 3px;
-  color: white;
-  font-size: 11px;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.tag-urgent { background: #e74c3c; }
-.tag-safety { background: #e67e22; }
-.tag-rule { background: #3498db; }
-.tag-normal { background: #3498db; }
-.tag-activity { background: #f39c12; }
-.tag-tip { background: #27ae60; }
-.tag-default { background: #95a5a6; }
-
-.notice-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: #2c3e50;
-  flex: 1;
-}
-
-.notice-content {
-  color: #7f8c8d;
-  font-size: 13px;
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-.notice-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #7f8c8d;
-  font-size: 12px;
-}
-
-.detail-btn {
-  padding: 6px 20px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background 0.3s;
-}
-
-.detail-btn:hover {
-  background: #2980b9;
-}
-
-/* 空状态 */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  color: #7f8c8d;
-}
-
-.empty-icon {
-  font-size: 60px;
-  margin-bottom: 20px;
-}
-
-/* 分页 */
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 25px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.page-info {
-  color: #7f8c8d;
-  font-size: 13px;
-}
-
-.page-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.page-btn {
-  min-width: 35px;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid #ddd;
-  background: white;
-  color: #7f8c8d;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.3s;
-}
-
-.page-btn:hover:not(:disabled) {
-  border-color: #3498db;
-  color: #3498db;
-}
-
-.page-btn.active {
-  background: #3498db;
-  color: white;
-  border-color: #3498db;
-}
-
-.page-btn:disabled {
-  background: #f5f5f5;
-  color: #ccc;
-  cursor: not-allowed;
-}
-
-/* 占位内容 */
-.placeholder-content {
-  text-align: center;
-  padding: 100px 20px;
-  color: #7f8c8d;
-}
-
-.placeholder-icon {
-  font-size: 80px;
-  margin-bottom: 20px;
-}
-
-.placeholder-content h2 {
-  color: #2c3e50;
-  margin-bottom: 10px;
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 </style>

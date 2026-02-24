@@ -1,0 +1,9 @@
+<template>
+  <div class="admin-page">
+    <h1>报修管理</h1>
+  </div>
+</template>
+
+<script>
+export default { name: 'AnnouncementManagement' }
+</script>

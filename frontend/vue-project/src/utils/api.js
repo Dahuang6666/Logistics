@@ -337,3 +337,42 @@ export function getDormNameById(dormitoryId) {
     params: {dormitoryId }
   });
 }
+
+/**
+ * 管理员：获取所有用户列表
+ */
+export function getAdminUserList() {
+  return request.get('/school/admin/getListUser');
+}
+
+/**
+ * 管理员：创建新用户
+ * @param {Object} data - User 对象数据
+ */
+export function createAdminUser(data) {
+  return request.post('/school/admin/createUser', data);
+}
+
+/**
+ * 管理员：更新用户信息
+ * @param {Object} data - User 对象数据
+ */
+export function updateAdminUser(data) {
+  return request.put('/school/admin/updateUser', data);
+}
+
+/**
+ * 管理员：删除用户
+ * @param {number} id - 用户 ID
+ */
+export function deleteAdminUser(id) {
+  return request.delete(`/school/admin/deleteUser/${id}`);
+}
+
+/**
+ * 管理员：根据 ID 查询单个用户
+ * @param {number} id
+ */
+export function getAdminUserById(id) {
+  return request.get(`/school/admin/${id}`);
+}
