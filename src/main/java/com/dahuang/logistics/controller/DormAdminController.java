@@ -76,35 +76,35 @@ public class DormAdminController {
 //        List<Announcement> list = dormAdminService.getAllAnnouncements();
 //        return Result.success(list);
 //    }
-     //写公告
-    @PostMapping("/getchat")
-    public String getAIAnnouncement(@RequestBody AIAnnouncement dto) {
-        return aiAnnouncementService.generateAnnouncement(
-            dto.getTopic(),
-            dto.getPublisher(),
-            dto.getPublishDate(),
-            dto.getSummary()
-       );
-    }
+//     //写公告
+//    @PostMapping("/getchat")
+//    public String getAIAnnouncement(@RequestBody AIAnnouncement dto) {
+//        return aiAnnouncementService.generateAnnouncement(
+//            dto.getTopic(),
+//            dto.getPublisher(),
+//            dto.getPublishDate(),
+//            dto.getSummary()
+//       );
+//    }
 
-    // 修改公告
-    @PutMapping("/updateAnnouncement")
-    public Result updateAnnouncement(@RequestBody Announcement announcement) {
-        if (dormAdminService.updateAnnouncement(announcement)) {
-            return Result.success();
-        } else {
-            return Result.error("公告修改失败");
-        }
-    }
+//    // 修改公告
+//    @PutMapping("/updateAnnouncement")
+//    public Result updateAnnouncement(@RequestBody Announcement announcement) {
+//        if (dormAdminService.updateAnnouncement(announcement)) {
+//            return Result.success();
+//        } else {
+//            return Result.error("公告修改失败");
+//        }
+//    }
 
-    // 删除公告
-    @DeleteMapping("/deleteAnnouncement")
-    public Result deleteAnnouncement(@RequestParam Integer id) {
-        if (dormAdminService.deleteAnnouncement(id)) {
-            return Result.success();
-        } else {
-            return Result.error("删除失败");
-        }
-    }
+//    // 删除公告
+//    @DeleteMapping("/deleteAnnouncement")
+//    public Result deleteAnnouncement(@RequestParam Integer id) {
+//        if (dormAdminService.deleteAnnouncement(id)) {
+//            return Result.success();
+//        } else {
+//            return Result.error("删除失败");
+//        }
+//    }
 
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dahuang.logistics.mapper.AdminMapper">
+
+    <select id="selectBuildList" resultType="com.dahuang.logistics.entity.Build">
+        SELECT * FROM build
+        <where>
+            <if test="buildingNumber != null and buildingNumber != ''"> AND building_number = #{buildingNumber} </if>
+            <if test="assignedGender != null"> AND assigned_gender = #{assignedGender} </if>
+            <if test="status != null"> AND status = #{status} </if>
+        </where>
+    </select>
+
+    <select id="selectDormitoryList" resultType="com.dahuang.logistics.entity.Dormitory">
+        SELECT * FROM dormitory
+        <where>
+            AND is_delete = 0
+            <if test="dormitoryNo != null and dormitoryNo != ''"> AND dormitory_no = #{dormitoryNo} </if>
+            <if test="buildingId != null"> AND building_id = #{buildingId} </if>
+            <if test="status != null"> AND status = #{status} </if>
+        </where>
+    </select>
+
+    <update id="cascadeDeleteDormitory">
+        UPDATE dormitory SET is_delete = 1 WHERE building_id = #{buildingId}
+    </update>
+
+</mapper>

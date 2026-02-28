@@ -360,6 +360,12 @@ export function createAdminUser(data) {
 export function updateAdminUser(data) {
   return request.put('/school/admin/updateUser', data);
 }
+/*
+重置密码
+ */
+export function resetPassword(userNo) {
+  return request.post('/school/admin/resetPassword', { userNo });
+}
 
 /**
  * 管理员：删除用户
@@ -375,4 +381,27 @@ export function deleteAdminUser(id) {
  */
 export function getAdminUserById(id) {
   return request.get(`/school/admin/${id}`);
+}
+
+/**
+ * 获取所有建议/投诉列表
+ */
+export function getListSuggest() {
+  return request.get('/school/admin/getListSuggest');
+}
+
+/**
+ * 处理建议 (更新状态和回复)
+ * @param {Object} data - ComplaintSuggestion 对象
+ */
+export function handleSuggest(data) {
+  return request.put('/school/admin/handle', data);
+}
+
+/**
+ * 删除建议
+ * @param {number} id
+ */
+export function deleteSuggest(id) {
+  return request.delete(`/school/admin/deleteSuggest/${id}`, { params: { id } });
 }

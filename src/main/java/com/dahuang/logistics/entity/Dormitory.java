@@ -14,4 +14,5 @@ public class Dormitory {
     private Integer capacity;          // 容量
     private Integer availableBeds;     // 剩余床位
     private String status;             // 状态:正常/维修中
+    private Integer is_delete;         // 逻辑删除 0 or 1
 }

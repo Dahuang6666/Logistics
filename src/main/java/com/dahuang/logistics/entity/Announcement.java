@@ -6,14 +6,45 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
+/**
+ * 公告实体类
+ * 对应数据库中的公告表，用于存储物流系统的公告信息
+ *
+ * @author （可补充作者名）
+ * @date （可补充日期）
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Announcement {
+    /**
+     * 公告主键ID
+     */
     private Integer id;
+
+    /**
+     * 公告标题
+     */
     private String title;
+
+    /**
+     * 公告内容
+     */
     private String content;
+
+    /**
+     * 发布人
+     */
     private String publisher;
+
+    /**
+     * 发布时间
+     */
     private Date publishTime;
+
+    /**
+     * 删除标识
+     * 0-未删除（默认），1-已删除
+     */
     private Integer isDeleted;
 }

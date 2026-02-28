@@ -1,9 +1,7 @@
 package com.dahuang.logistics.controller;
 
 
-import com.dahuang.logistics.entity.ComplaintSuggestion;
-import com.dahuang.logistics.entity.Result;
-import com.dahuang.logistics.entity.User;
+import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +18,12 @@ public class AdminController {
     @PostMapping("/createUser")
     public Result  createUser(@RequestBody User user) {
         adminService.createUser(user);
+        return Result.success();
+    }
+    //重置密码
+    @PostMapping("/resetPassword")
+    public Result resetPassword(@RequestBody String userNo) {
+        adminService.resetPassword(userNo);
         return Result.success();
     }
 
@@ -80,5 +84,34 @@ public class AdminController {
     public Result countByStatus() {
         List<Map<String, Object>> stats = adminService.getDormChangeStatusStats();
         return Result.success(stats);
+    }
+
+    // --- 宿舍楼管理 ---
+    @PostMapping("/build")
+    public Result addBuild(@RequestBody Build build) {
+        return adminService.insertBuild(build) > 0 ? Result.success() : Result.error("添加失败");
+    }
+
+    @GetMapping("/build/list")
+    public Result listBuild(Build build) { // 接收组合查询参数
+        return Result.success(adminService.selectBuildList(build));
+    }
+
+    @DeleteMapping("/build/{id}")
+    public Result deleteBuild(@PathVariable Integer id) {
+        adminService.deleteBuild(id);
+        return Result.success();
+    }
+
+    // --- 宿舍管理 ---
+    @GetMapping("/dorm/list")
+    public Result listDorm(Dormitory dormitory) {
+        return Result.success(adminService.selectDormitoryList(dormitory));
+    }
+
+    @PutMapping("/dorm/updateBeds")
+    public Result updateBeds(Integer id, Integer amount) {
+        int res = adminService.updateBeds(id, amount);
+        return res > 0 ? Result.success() : Result.error("修改失败，请检查床位上限或余量");
     }
 }

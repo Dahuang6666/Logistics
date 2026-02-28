@@ -1,7 +1,9 @@
 package com.dahuang.logistics.mapper;
 
 
+import com.dahuang.logistics.entity.Build;
 import com.dahuang.logistics.entity.ComplaintSuggestion;
+import com.dahuang.logistics.entity.Dormitory;
 import com.dahuang.logistics.entity.User;
 import org.apache.ibatis.annotations.*;
 
@@ -14,6 +16,12 @@ public interface AdminMapper {
             "(user_no, password, username, role, phone, email, status, gender) " +
             "VALUES (#{userNo}, #{password}, #{username}, #{role}, #{phone}, #{email}, #{status}, #{gender})")
     int insertUser(User user);
+
+    @Update("UPDATE school_backend_manage.user " +
+            "SET password = #{password} " +
+            "WHERE user_no = #{userNo}")
+    int resetPassword(@Param("userNo") String userNo,
+                      @Param("password") String password);
 
     @Update("UPDATE school_backend_manage.user " +
             "SET username=#{username}, role=#{role}, phone=#{phone}, email=#{email}, status=#{status}, gender=#{gender} " +
@@ -64,5 +72,39 @@ public interface AdminMapper {
             "GROUP BY status")
     List<Map<String, Object>> countDormChangeStatus();
 
+
+    // 宿舍楼
+    @Insert("INSERT INTO build(building_number, assigned_gender, description, status) " +
+            "VALUES(#{buildingNumber}, #{assignedGender}, #{description}, #{status})")
+    int insertBuild(Build build);
+
+    @Update("UPDATE build SET building_number=#{buildingNumber}, assigned_gender=#{assignedGender}, " +
+            "description=#{description}, status=#{status} WHERE id=#{id}")
+    int updateBuild(Build build);
+
+    @Update("UPDATE build SET status='异常' WHERE id=#{id}")
+    int disableBuild(Integer id);
+
+    List<Build> selectBuildList(Build build);
+
+    // 宿舍
+    @Insert("INSERT INTO dormitory(dormitory_no, building_id, capacity, available_beds, status) " +
+            "VALUES(#{dormitoryNo}, #{buildingId}, #{capacity}, #{availableBeds}, #{status})")
+    int insertDormitory(Dormitory dormitory);
+
+    @Update("UPDATE dormitory SET dormitory_no=#{dormitoryNo}, building_id=#{buildingId}, " +
+            "capacity=#{capacity}, available_beds=#{availableBeds}, status=#{status} WHERE dormitory_id=#{dormitoryId}")
+    int updateDormitory(Dormitory dormitory);
+
+    @Update("UPDATE dormitory SET is_delete = 1 WHERE dormitory_id = #{id}")
+    int deleteDormitory(Integer id);
+
+    @Update("UPDATE dormitory SET available_beds = available_beds + #{amount} " +
+            "WHERE dormitory_id = #{id} AND (available_beds + #{amount}) >= 0 AND (available_beds + #{amount}) <= capacity")
+    int updateBeds(@Param("id") Integer id, @Param("amount") Integer amount);
+
+    List<Dormitory> selectDormitoryList(Dormitory dormitory);
+
+    int cascadeDeleteDormitory(Integer buildingId);
 
 }

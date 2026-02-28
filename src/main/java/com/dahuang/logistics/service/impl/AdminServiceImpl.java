@@ -1,6 +1,8 @@
 package com.dahuang.logistics.service.impl;
 
+import com.dahuang.logistics.entity.Build;
 import com.dahuang.logistics.entity.ComplaintSuggestion;
+import com.dahuang.logistics.entity.Dormitory;
 import com.dahuang.logistics.entity.User;
 import com.dahuang.logistics.mapper.AdminMapper;
 import com.dahuang.logistics.service.AdminService;
@@ -22,6 +24,12 @@ public class AdminServiceImpl implements AdminService {
         // 密码加密
         user.setPassword(PasswordUtils.encode(user.getPassword()));
         return adminMapper.insertUser(user);
+    }
+
+    public int resetPassword(String userNo) {
+        // 重置为 123456
+        String newPassword = PasswordUtils.encode("123456");
+        return adminMapper.resetPassword(userNo, newPassword);
     }
 
     public int updateUser(User user) {
@@ -95,5 +103,51 @@ public class AdminServiceImpl implements AdminService {
 
             return rawList;
         }
+
+    @Override
+    public int deleteBuild(Integer id) {
+        adminMapper.disableBuild(id);
+
+        return adminMapper.cascadeDeleteDormitory(id);
+    }
+
+    @Override
+    public int updateBeds(Integer dormitoryId, Integer amount) {
+        return adminMapper.updateBeds(dormitoryId, amount);
+    }
+
+    @Override
+    public int insertBuild(Build build) {
+        return adminMapper.insertBuild(build);
+    }
+
+    @Override
+    public int updateBuild(Build build) {
+        return adminMapper.updateBuild(build);
+    }
+
+    @Override
+    public List<Build> selectBuildList(Build build) {
+        return adminMapper.selectBuildList(build);
+    }
+    @Override
+    public int insertDormitory(Dormitory d) {
+        return adminMapper.insertDormitory(d);
+    }
+
+    @Override
+    public int updateDormitory(Dormitory dormitory) {
+        return adminMapper.updateDormitory(dormitory);
+    }
+
+    @Override
+    public int deleteDormitory(Integer id) {
+        return adminMapper.deleteDormitory(id);
+    }
+
+    @Override
+    public List<Dormitory> selectDormitoryList(Dormitory d) {
+        return adminMapper.selectDormitoryList(d);
+    }
 
 }

@@ -16,4 +16,5 @@ public class Build {
     private String description;        // 备注信息
     private Date createTime;           // 创建时间
     private Date updateTime;           // 更新时间
+    private String status;             //是否异常
 }
