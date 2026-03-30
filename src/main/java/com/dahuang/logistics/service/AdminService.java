@@ -52,4 +52,12 @@ public interface AdminService {
     List<Dormitory> selectDormitoryList(Dormitory dormitory); // 条件查询
 
     int updateBeds(Integer dormitoryId, Integer amount); // 手动增减床位
+
+    List<Map<String, Object>> getAnnouncementTypeDistribution();
+
+    List<Map<String, Object>> getDormitoryOccupancy();
+
+    List<Map<String, Object>> getRepairStatusDistribution();
+
+    List<Map<String, Object>> getUserGenderDistribution();
 }

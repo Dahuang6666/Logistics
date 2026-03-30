@@ -1,8 +1,8 @@
 package com.dahuang.logistics.controller;
 
 import com.dahuang.logistics.dto.ApplicationStatusRequest;
-import com.dahuang.logistics.entity.AIAnnouncement;
 import com.dahuang.logistics.entity.Announcement;
+import com.dahuang.logistics.entity.AnnouncementType;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.Result;
 import com.dahuang.logistics.service.DormAdminService;
@@ -21,8 +21,6 @@ import java.util.List;
 public class DormAdminController {
     @Autowired
     private DormAdminService dormAdminService;
-     @Autowired
-     private AIAnnouncementService aiAnnouncementService;
     //获取待审批所有变更宿舍申请
     @GetMapping("/getAllApplication")
      public Result getPENDINGApplication(){
@@ -70,41 +68,90 @@ public class DormAdminController {
             return Result.error("删除失败");
         }
     }
-//    // 查看所有公告
-//    @GetMapping("/listAnnouncement")
-//    public Result getAllAnnouncements() {
-//        List<Announcement> list = dormAdminService.getAllAnnouncements();
-//        return Result.success(list);
-//    }
-//     //写公告
-//    @PostMapping("/getchat")
-//    public String getAIAnnouncement(@RequestBody AIAnnouncement dto) {
-//        return aiAnnouncementService.generateAnnouncement(
-//            dto.getTopic(),
-//            dto.getPublisher(),
-//            dto.getPublishDate(),
-//            dto.getSummary()
-//       );
-//    }
 
-//    // 修改公告
-//    @PutMapping("/updateAnnouncement")
-//    public Result updateAnnouncement(@RequestBody Announcement announcement) {
-//        if (dormAdminService.updateAnnouncement(announcement)) {
-//            return Result.success();
-//        } else {
-//            return Result.error("公告修改失败");
-//        }
-//    }
+    // 发布新公告
+    @PostMapping("/addAnnouncement")
+    public Result addAnnouncement(@RequestBody Announcement announcement) {
+        if (dormAdminService.addAnnouncement(announcement)) {
+            return Result.success();
+        } else {
+            return Result.error("公告发布失败");
+        }
+    }
+    // 修改公告
+    @PutMapping("/updateAnnouncement")
+    public Result updateAnnouncement(@RequestBody Announcement announcement) {
+        if (dormAdminService.updateAnnouncement(announcement)) {
+            return Result.success();
+        } else {
+            return Result.error("公告修改失败");
+        }
+    }
 
-//    // 删除公告
-//    @DeleteMapping("/deleteAnnouncement")
-//    public Result deleteAnnouncement(@RequestParam Integer id) {
-//        if (dormAdminService.deleteAnnouncement(id)) {
-//            return Result.success();
-//        } else {
-//            return Result.error("删除失败");
-//        }
-//    }
+    // 删除公告
+    @DeleteMapping("/deleteAnnouncement")
+    public Result deleteAnnouncement(@RequestParam Integer id) {
+        if (dormAdminService.deleteAnnouncement(id)) {
+            return Result.success();
+        } else {
+            return Result.error("删除失败");
+        }
+    }
+
+    @GetMapping("/getAllTypes")
+    public Result getAllTypes() {
+        List<AnnouncementType> types = dormAdminService.findAllAnnouncementTypes();
+        if (types != null) {
+            return Result.success(types);
+        } else {
+            return Result.error("获取类型列表失败");
+        }
+    }
+
+    // 新增公告类型
+    @PostMapping("/addType")
+    public Result addType(@RequestBody AnnouncementType type) {
+        if (dormAdminService.addAnnouncementType(type)) {
+            return Result.success();
+        } else {
+            return Result.error("新增分类失败");
+        }
+    }
+
+    // 删除公告类型
+    @DeleteMapping("/deleteType")
+    public Result deleteType(@RequestParam Integer id) {
+        // 尝试删除
+        if (dormAdminService.deleteAnnouncementType(id)) {
+            return Result.success();
+        } else {
+            return Result.error("删除失败：该类型为系统内置或操作异常");
+        }
+    }
+
+    /**
+     * 修改公告类型
+     */
+    @PutMapping("/updateType")
+    public Result updateType(@RequestBody AnnouncementType type) {
+        // 基本参数校验
+        if (type.getId() == null) {
+            return Result.error("缺少类型ID");
+        }
+        if (dormAdminService.updateAnnouncementType(type)) {
+            return Result.success();
+        } else {
+            return Result.error("修改分类失败");
+        }
+    }
+    // 新增：根据宿舍ID查询宿舍号接口
+    @GetMapping("/getDormitoryNoById")
+    public Result getDormitoryNoById(@RequestParam Integer dormitoryId) {
+        String dormitoryNo = dormAdminService.getDormitoryNoById(dormitoryId);
+        if (dormitoryNo == null) {
+            return Result.error("未找到该宿舍信息");
+        }
+        return Result.success(dormitoryNo);
+    }
 
 }

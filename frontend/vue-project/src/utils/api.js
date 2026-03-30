@@ -405,3 +405,146 @@ export function handleSuggest(data) {
 export function deleteSuggest(id) {
   return request.delete(`/school/admin/deleteSuggest/${id}`, { params: { id } });
 }
+
+
+/** --- 宿舍楼管理 --- **/
+
+// 添加楼宇
+export function addBuild(data) {
+  return request.post('/school/admin/build', data);
+}
+
+// 获取楼宇列表（支持组合查询）
+export function listBuild(params) {
+  return request.get('/school/admin/build/list', { params });
+}
+
+// 删除楼宇（级联删除宿舍）
+export function deleteBuild(id) {
+  return request.delete(`/school/admin/build/${id}`);
+}
+
+/** --- 宿舍管理 --- **/
+
+// 获取宿舍列表（支持组合查询）
+export function listDorm(params) {
+  return request.get('/school/admin/dorm/list', { params });
+}
+
+// 修改床位数量 (amount 为正负数)
+export function updateBeds(id, amount) {
+  return request.put('/school/admin/dorm/updateBeds', null, {
+    params: { id, amount }
+  });
+}
+
+// 新增宿舍
+export function addDorm(data) {
+  return request.post('/school/admin/dorm', data);
+}
+
+// 删除宿舍
+export function deleteDorm(id) {
+  return request.delete(`/school/admin/dorm/${id}`);
+}
+
+// @/utils/api.js
+
+// 管理员查看全部报修
+export function getAllRepairs() {
+  return request.get('/school/dormAdmin/all');
+}
+
+// 管理员更新报修状态
+export function updateRepairStatus(id, status) {
+  return request.put('/school/dormAdmin/updateStatus', null, {
+    params: { id, status }
+  });
+}
+
+// 管理员删除报修（软删除）
+export function deleteRepair(id) {
+  return request.delete('/school/dormAdmin/delete', {
+    params: { id }
+  });
+}
+
+
+export function getPendingApplications() {
+  return request.get('/school/dormAdmin/getAllApplication');
+}
+
+// 根据状态获取申请列表 (对应 /getApplicationList)
+export function getApplicationList(status) {
+  return request.get('/school/dormAdmin/getApplicationList', {
+    params: { status }
+  });
+}
+
+// 更新申请状态 (对应 /updateApplicationStatus)
+export function updateApplicationStatus(data) {
+  return request.post('/school/dormAdmin/updateApplicationStatus', data);
+}
+
+// 新增公告
+export function addAnnouncement(data) {
+  return request.post('/school/dormAdmin/addAnnouncement', data)
+}
+
+// 修改公告
+export function updateAnnouncement(data) {
+  return request.put('/school/dormAdmin/updateAnnouncement', data)
+}
+
+// 删除公告
+export function deleteAnnouncement(id) {
+  return request.delete('/school/dormAdmin/deleteAnnouncement', { params: { id } })
+}
+
+// 获取所有公告类型
+export function getAllTypes() {
+  return request.get('/school/dormAdmin/getAllTypes')
+}
+
+// 新增公告类型
+export function addAnnouncementType(data) {
+  return request.post('/school/dormAdmin/addType', data)
+}
+
+// 修改公告类型
+export function updateAnnouncementType(data) {
+  return request.put('/school/dormAdmin/updateType', data)
+}
+
+// 删除公告类型
+export function deleteAnnouncementType(id) {
+  return request.delete('/school/dormAdmin/deleteType', { params: { id } })
+}
+
+export function getDormitoryNoById(dormitoryId) {
+  return request.get('/school/dormAdmin/getDormitoryNoById', {
+    params: { dormitoryId }
+  });
+}
+
+
+
+// 按类型统计公告数量
+export function getAnnouncementTypeDistribution() {
+  return request.get('/school/admin/announcement/typeDistribution');
+}
+
+// 各楼宿舍入住率
+export function getDormitoryOccupancy() {
+  return request.get('/school/admin/dormitory/occupancy');
+}
+
+// 报修状态分布
+export function getRepairStatusDistribution() {
+  return request.get('/school/admin/repair/statusDistribution');
+}
+
+// 用户性别比例
+export function getUserGenderDistribution() {
+  return request.get('/school/admin/user/genderDistribution');
+}

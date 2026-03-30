@@ -1,5 +1,6 @@
 package com.dahuang.logistics.service.impl;
 import com.dahuang.logistics.entity.Announcement;
+import com.dahuang.logistics.entity.AnnouncementType;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.RepairApplication;
 import com.dahuang.logistics.enums.ApplicationStatus;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +90,16 @@ public class DormAdminServiceImpl implements DormAdminService {
     }
 
     @Override
+    public boolean addAnnouncement(Announcement announcement) {
+        try {
+            // 也可以在这里手动设置默认值，或者依靠数据库默认值
+            return dormAdminMapper.insertAnnouncement(announcement) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    @Override
     public boolean updateAnnouncement(Announcement announcement) {
         try {
             return dormAdminMapper.updateAnnouncement(announcement) > 0;
@@ -106,4 +119,64 @@ public class DormAdminServiceImpl implements DormAdminService {
         }
     }
 
+    @Override
+    public List<AnnouncementType> findAllAnnouncementTypes() {
+        try {
+            return dormAdminMapper.selectAllTypes();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public boolean deleteAnnouncementType(Integer id) {
+        // 保护：禁止删除 ID=1 的系统内置类型
+        if (Integer.valueOf(1).equals(id)) {
+            return false;
+        }
+        try {
+            // 第一步：先把关联到该类型的公告迁移到“未知类型”
+            dormAdminMapper.migrateAnnouncementsToUnknown(id);
+
+            // 第二步：删除类型记录
+            return dormAdminMapper.deleteAnnouncementTypeById(id) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("删除失败，已回滚数据");
+        }
+    }
+
+    @Override
+    public boolean addAnnouncementType(AnnouncementType type) {
+        // 如果没有传优先级，默认设置为最低级 1
+        if (type.getPriority() == null) {
+            type.setPriority(1);
+        }
+        return dormAdminMapper.insertAnnouncementType(type) > 0;
+    }
+
+    @Override
+    public boolean updateAnnouncementType(AnnouncementType type) {
+        try {
+            if (Integer.valueOf(1).equals(type.getId())) {
+                type.setTypeName("未知类型");
+            }
+            return dormAdminMapper.updateAnnouncementType(type) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public String getDormitoryNoById(Integer dormitoryId) {
+        // 可添加参数校验（非空、合法性）
+        if (dormitoryId == null || dormitoryId <= 0) {
+            return null; // 或抛出自定义异常
+        }
+        return dormAdminMapper.getDormitoryNoById(dormitoryId);
+    }
 }

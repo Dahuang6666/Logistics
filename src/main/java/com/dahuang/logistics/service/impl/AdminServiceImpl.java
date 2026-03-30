@@ -149,5 +149,31 @@ public class AdminServiceImpl implements AdminService {
     public List<Dormitory> selectDormitoryList(Dormitory d) {
         return adminMapper.selectDormitoryList(d);
     }
+    /**
+     * 按类型统计公告数量
+     */
+    public List<Map<String, Object>> getAnnouncementTypeDistribution() {
+        return adminMapper.getAnnouncementTypeDistribution();
+    }
 
+    /**
+     * 各楼宿舍入住率
+     */
+    public List<Map<String, Object>> getDormitoryOccupancy() {
+        return adminMapper.getDormitoryOccupancy();
+    }
+
+    /**
+     * 报修状态分布
+     */
+    public List<Map<String, Object>> getRepairStatusDistribution() {
+        return adminMapper.getRepairStatusDistribution();
+    }
+
+    /**
+     * 用户性别比例
+     */
+    public List<Map<String, Object>> getUserGenderDistribution() {
+        return adminMapper.getUserGenderDistribution();
+    }
 }

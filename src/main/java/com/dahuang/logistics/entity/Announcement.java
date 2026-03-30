@@ -8,10 +8,6 @@ import java.util.Date;
 
 /**
  * 公告实体类
- * 对应数据库中的公告表，用于存储物流系统的公告信息
- *
- * @author （可补充作者名）
- * @date （可补充日期）
  */
 @Data
 @AllArgsConstructor
@@ -47,4 +43,8 @@ public class Announcement {
      * 0-未删除（默认），1-已删除
      */
     private Integer isDeleted;
+    /**
+     * 公告类型ID
+     */
+    private Integer announcementTypeId;
 }

@@ -6,8 +6,8 @@
         SELECT * FROM build
         <where>
             <if test="buildingNumber != null and buildingNumber != ''"> AND building_number = #{buildingNumber} </if>
-            <if test="assignedGender != null"> AND assigned_gender = #{assignedGender} </if>
-            <if test="status != null"> AND status = #{status} </if>
+            <if test="assignedGender != null and assignedGender != ''"> AND assigned_gender = #{assignedGender} </if>
+            <if test="status != null and status != ''"> AND status = #{status} </if>
         </where>
     </select>
 
@@ -17,7 +17,7 @@
             AND is_delete = 0
             <if test="dormitoryNo != null and dormitoryNo != ''"> AND dormitory_no = #{dormitoryNo} </if>
             <if test="buildingId != null"> AND building_id = #{buildingId} </if>
-            <if test="status != null"> AND status = #{status} </if>
+            <if test="status != null and status != ''"> AND status = #{status} </if>
         </where>
     </select>
 

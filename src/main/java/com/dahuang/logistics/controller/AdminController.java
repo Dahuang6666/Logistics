@@ -79,6 +79,39 @@ public class AdminController {
         return Result.success(stats);
     }
 
+
+    /**
+     * 按类型统计公告数量（饼图）
+     */
+    @GetMapping("/announcement/typeDistribution")
+    public Result getAnnouncementTypeDistribution() {
+        return Result.success(adminService.getAnnouncementTypeDistribution());
+    }
+
+    /**
+     * 各楼宿舍入住率（柱状图）
+     */
+    @GetMapping("/dormitory/occupancy")
+    public Result getDormitoryOccupancy() {
+        return Result.success(adminService.getDormitoryOccupancy());
+    }
+
+    /**
+     * 报修状态分布（环形图）
+     */
+    @GetMapping("/repair/statusDistribution")
+    public Result getRepairStatusDistribution() {
+        return Result.success(adminService.getRepairStatusDistribution());
+    }
+
+    /**
+     * 用户性别比例（饼图）
+     */
+    @GetMapping("/user/genderDistribution")
+    public Result getUserGenderDistribution() {
+        return Result.success(adminService.getUserGenderDistribution());
+    }
+
    //宿舍申请数量
     @GetMapping("/dormCountByStatus")
     public Result countByStatus() {
@@ -89,7 +122,8 @@ public class AdminController {
     // --- 宿舍楼管理 ---
     @PostMapping("/build")
     public Result addBuild(@RequestBody Build build) {
-        return adminService.insertBuild(build) > 0 ? Result.success() : Result.error("添加失败");
+        return adminService.insertBuild(build) > 0 ?
+                Result.success() : Result.error("添加失败");
     }
 
     @GetMapping("/build/list")
@@ -103,7 +137,7 @@ public class AdminController {
         return Result.success();
     }
 
-    // --- 宿舍管理 ---
+    //  宿舍管理
     @GetMapping("/dorm/list")
     public Result listDorm(Dormitory dormitory) {
         return Result.success(adminService.selectDormitoryList(dormitory));
@@ -112,6 +146,23 @@ public class AdminController {
     @PutMapping("/dorm/updateBeds")
     public Result updateBeds(Integer id, Integer amount) {
         int res = adminService.updateBeds(id, amount);
-        return res > 0 ? Result.success() : Result.error("修改失败，请检查床位上限或余量");
+        return res > 0 ?
+                Result.success() : Result.error("修改失败，请检查床位上限或余量");
     }
+    // 新增宿舍
+    @PostMapping("/dorm")
+    public Result addDorm(@RequestBody Dormitory dormitory) {
+        // 初始剩余床位应等于容量
+        dormitory.setAvailableBeds(dormitory.getCapacity());
+        return adminService.insertDormitory(dormitory) > 0 ?
+                Result.success() : Result.error("添加失败");
+    }
+
+    // 删除宿舍
+    @DeleteMapping("/dorm/{id}")
+    public Result deleteDorm(@PathVariable Integer id) {
+        return adminService.deleteDormitory(id) > 0 ?
+                Result.success() : Result.error("删除失败");
+    }
+
 }
