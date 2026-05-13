@@ -1,8 +1,6 @@
 package com.dahuang.logistics.service;
 
-import com.dahuang.logistics.entity.Announcement;
-import com.dahuang.logistics.entity.AnnouncementType;
-import com.dahuang.logistics.entity.DormChangeApplication;
+import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.vo.DormChangeApplicationVO;
 
 import java.util.List;
@@ -37,4 +35,12 @@ public interface DormAdminService {
     boolean updateAnnouncementType(AnnouncementType type);
 
     String getDormitoryNoById(Integer dormitoryId);
+
+    List<Dormitory> getAvailableDorms(Integer buildingId);
+
+    Result getAvailableBuildingsByGender(String studentNo);
+
+    boolean updateTargetDorm(Integer applicationId, Integer targetDormId);
+
+    DormChangeApplicationVO getApplicationById(Integer applicationId);
 }

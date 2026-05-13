@@ -1,9 +1,6 @@
 package com.dahuang.logistics.mapper;
 
-import com.dahuang.logistics.entity.Announcement;
-import com.dahuang.logistics.entity.AnnouncementType;
-import com.dahuang.logistics.entity.DormChangeApplication;
-import com.dahuang.logistics.entity.RepairApplication;
+import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.enums.ApplicationStatus;
 import com.dahuang.logistics.vo.DormChangeApplicationVO;
 import org.apache.ibatis.annotations.*;
@@ -13,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface DormAdminMapper {
 
-    @Select("select * from school_backend_manage.dorm_change_application where status= #{status.desc}")
+    @Select("select * from school_backend_manage.dorm_change_application where status= #{status}")
     List<DormChangeApplicationVO> getAllApplication(ApplicationStatus status);
 
     @Update("update  school_backend_manage.dorm_change_application " +
@@ -83,4 +80,60 @@ public interface DormAdminMapper {
 
     @Select("SELECT dormitory_no FROM school_backend_manage.dormitory WHERE dormitory_id = #{dormitoryId} AND is_delete = 0")
     String getDormitoryNoById(Integer dormitoryId);
+
+    List<Dormitory> getAvailableDorms(Integer buildingId);
+
+    @Select("SELECT gender FROM school_backend_manage.user WHERE user_no = #{studentNo} AND status = 1")
+    String getStudentGender(@Param("studentNo") String studentNo);
+
+    @Select("SELECT b.id as id, b.building_number as buildingNumber, b.assigned_gender as assignedGender " +
+            "FROM school_backend_manage.build b " +
+            "WHERE  b.status = '正常' AND b.assigned_gender = #{gender}")
+    List<Build> getAvailableBuildingsByGender(@Param("gender") String gender);
+
+    @Update("UPDATE school_backend_manage.dorm_change_application SET target_dormitory_id = #{targetDormId} WHERE application_id = #{applicationId}")
+    int updateTargetDorm(@Param("applicationId") Integer applicationId, @Param("targetDormId") Integer targetDormId);
+
+    // 获取申请详情（包括学号、当前宿舍ID、目标宿舍ID、审批意见等）
+    @Select("SELECT application_id as applicationId, student_no as studentNo, " +
+            "current_dormitory_id as currentDormitoryId, target_dormitory_id as targetDormitoryId, " +
+            "reason, status, application_time as applicationTime, comment, " +
+            "approver_no as approverNo, approval_time as approvalTime " +
+            "FROM school_backend_manage.dorm_change_application WHERE application_id = #{applicationId}")
+    DormChangeApplicationVO getApplicationById(@Param("applicationId") Integer applicationId);
+
+    // 获取宿舍所属楼栋ID
+    @Select("SELECT building_id FROM school_backend_manage.dormitory WHERE dormitory_id = #{dormitoryId}")
+    Integer getBuildingIdByDormitoryId(@Param("dormitoryId") Integer dormitoryId);
+
+    // 获取宿舍号
+    @Select("SELECT dormitory_no FROM school_backend_manage.dormitory WHERE dormitory_id = #{dormitoryId}")
+    String getDormitoryNo(@Param("dormitoryId") Integer dormitoryId);
+
+    // 更新学生住宿信息表
+    @Update("UPDATE school_backend_manage.student_dormitory_info " +
+            "SET building_id = #{buildingId}, dormitory_number = #{dormitoryNumber}, is_info_completed = 1 " +
+            "WHERE user_no = #{userNo}")
+    int updateStudentDormitoryInfo(@Param("userNo") String userNo, 
+                                   @Param("buildingId") Integer buildingId, 
+                                   @Param("dormitoryNumber") String dormitoryNumber);
+
+    // 插入学生住宿信息（如果不存在）
+    @Insert("INSERT INTO school_backend_manage.student_dormitory_info(user_no, building_id, dormitory_number, is_info_completed) " +
+            "VALUES(#{userNo}, #{buildingId}, #{dormitoryNumber}, 1)")
+    int insertStudentDormitoryInfo(@Param("userNo") String userNo, 
+                                   @Param("buildingId") Integer buildingId, 
+                                   @Param("dormitoryNumber") String dormitoryNumber);
+
+    // 检查学生住宿信息是否存在
+    @Select("SELECT COUNT(*) FROM school_backend_manage.student_dormitory_info WHERE user_no = #{userNo}")
+    int checkStudentDormitoryExists(@Param("userNo") String userNo);
+
+    // 原宿舍床位+1
+    @Update("UPDATE school_backend_manage.dormitory SET available_beds = available_beds + 1 WHERE dormitory_id = #{dormitoryId}")
+    int increaseAvailableBeds(@Param("dormitoryId") Integer dormitoryId);
+
+    // 目标宿舍床位-1
+    @Update("UPDATE school_backend_manage.dormitory SET available_beds = available_beds - 1 WHERE dormitory_id = #{dormitoryId}")
+    int decreaseAvailableBeds(@Param("dormitoryId") Integer dormitoryId);
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dahuang.logistics.mapper.DormAdminMapper">
+
+    <select id="getAvailableDorms" resultType="com.dahuang.logistics.entity.Dormitory">
+        SELECT dormitory_id as dormitoryId, dormitory_no as dormitoryNo, building_id as buildingId,
+        capacity, available_beds as availableBeds, status
+        FROM school_backend_manage.dormitory
+        WHERE available_beds > 0 AND status = '正常'
+        <if test="buildingId != null">
+            AND building_id = #{buildingId}
+        </if>
+    </select>
+
+</mapper>

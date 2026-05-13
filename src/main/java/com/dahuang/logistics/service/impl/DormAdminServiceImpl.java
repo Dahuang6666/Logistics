@@ -1,8 +1,5 @@
 package com.dahuang.logistics.service.impl;
-import com.dahuang.logistics.entity.Announcement;
-import com.dahuang.logistics.entity.AnnouncementType;
-import com.dahuang.logistics.entity.DormChangeApplication;
-import com.dahuang.logistics.entity.RepairApplication;
+import com.dahuang.logistics.entity.*;
 import com.dahuang.logistics.enums.ApplicationStatus;
 import com.dahuang.logistics.mapper.DormAdminMapper;
 import com.dahuang.logistics.service.DormAdminService;
@@ -36,14 +33,66 @@ public class DormAdminServiceImpl implements DormAdminService {
     }
 
     @Override
+    @Transactional
     public boolean updateApplication(DormChangeApplication application) {
         try {
+            String status = application.getStatus();
+            String dbStatus = status;
+            if ("待审批".equals(status)) {
+                dbStatus = "PENDING";
+            } else if ("已同意".equals(status)) {
+                dbStatus = "APPROVED";
+            } else if ("已拒绝".equals(status)) {
+                dbStatus = "REJECTED";
+            }
+            application.setStatus(dbStatus);
+            
             int rows = dormAdminMapper.updateApplication(application);
+            
+            // 如果是同意换宿，还需要更新学生住宿信息表
+            if ("APPROVED".equals(dbStatus)) {
+                updateStudentDormitoryAfterApproval(application.getApplicationId());
+            }
+            
             return rows > 0;
         } catch (Exception e) {
             logger.error("更新宿舍调换申请状态失败", e);
-            return false;
+            throw new RuntimeException(e);
         }
+    }
+    
+    private void updateStudentDormitoryAfterApproval(Integer applicationId) {
+        // 获取申请详情
+        DormChangeApplicationVO application = dormAdminMapper.getApplicationById(applicationId);
+        if (application == null || application.getTargetDormitoryId() == null) {
+            return;
+        }
+
+        String studentNo = application.getStudentNo();
+        Integer currentDormitoryId = application.getCurrentDormitoryId();
+        Integer targetDormitoryId = application.getTargetDormitoryId();
+
+        // 获取目标宿舍的楼栋ID和宿舍号
+        Integer buildingId = dormAdminMapper.getBuildingIdByDormitoryId(targetDormitoryId);
+        String dormitoryNumber = dormAdminMapper.getDormitoryNo(targetDormitoryId);
+
+        if (buildingId == null || dormitoryNumber == null) {
+            return;
+        }
+
+        // 更新或插入学生住宿信息
+        int exists = dormAdminMapper.checkStudentDormitoryExists(studentNo);
+        if (exists > 0) {
+            dormAdminMapper.updateStudentDormitoryInfo(studentNo, buildingId, dormitoryNumber);
+        } else {
+            dormAdminMapper.insertStudentDormitoryInfo(studentNo, buildingId, dormitoryNumber);
+        }
+
+        // 更新宿舍床位：原宿舍+1，目标宿舍-1
+        if (currentDormitoryId != null) {
+            dormAdminMapper.increaseAvailableBeds(currentDormitoryId);
+        }
+        dormAdminMapper.decreaseAvailableBeds(targetDormitoryId);
     }
     @Override
     public List<DormChangeApplicationVO> getApplicationList(String status) {
@@ -51,7 +100,16 @@ public class DormAdminServiceImpl implements DormAdminService {
             if (status == null || status.equals("全部")) {
                 return dormAdminMapper.getAllApplicationList();
             } else {
-                return dormAdminMapper.getApplicationsByStatus(status);
+                // 将中文状态转换为数据库存储的枚举值
+                String dbStatus = status;
+                if ("待审批".equals(status)) {
+                    dbStatus = "PENDING";
+                } else if ("已同意".equals(status)) {
+                    dbStatus = "APPROVED";
+                } else if ("已拒绝".equals(status)) {
+                    dbStatus = "REJECTED";
+                }
+                return dormAdminMapper.getApplicationsByStatus(dbStatus);
             }
         } catch (Exception e) {
             logger.error("获取申请记录失败", e);
@@ -178,5 +236,51 @@ public class DormAdminServiceImpl implements DormAdminService {
             return null; // 或抛出自定义异常
         }
         return dormAdminMapper.getDormitoryNoById(dormitoryId);
+    }
+
+    @Override
+    public List<Dormitory> getAvailableDorms(Integer buildingId) {
+        try {
+            return dormAdminMapper.getAvailableDorms(buildingId);
+        } catch (Exception e) {
+            logger.error("获取可用宿舍列表失败", e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Result getAvailableBuildingsByGender(String studentNo) {
+        try {
+            String gender = dormAdminMapper.getStudentGender(studentNo);
+            if (gender == null) {
+                return Result.error("未找到学生信息");
+            }
+            List<Build> buildings = dormAdminMapper.getAvailableBuildingsByGender(gender);
+            return Result.success(buildings);
+        } catch (Exception e) {
+            logger.error("获取可用宿舍楼失败", e);
+            return Result.error("获取宿舍楼失败");
+        }
+    }
+
+    @Override
+    public boolean updateTargetDorm(Integer applicationId, Integer targetDormId) {
+        try {
+            int rows = dormAdminMapper.updateTargetDorm(applicationId, targetDormId);
+            return rows > 0;
+        } catch (Exception e) {
+            logger.error("更新目标宿舍失败", e);
+            return false;
+        }
+    }
+
+    @Override
+    public DormChangeApplicationVO getApplicationById(Integer applicationId) {
+        try {
+            return dormAdminMapper.getApplicationById(applicationId);
+        } catch (Exception e) {
+            logger.error("获取申请详情失败", e);
+            return null;
+        }
     }
 }

@@ -27,7 +27,7 @@
     </div>
 
     <div class="table-card">
-      <table class="admin-table">
+      <table class="admin-table" v-if="filteredList.length > 0">
         <thead>
         <tr>
           <th width="120">申请人学号</th>
@@ -62,7 +62,13 @@
         </tr>
         </tbody>
       </table>
+      <div v-else class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">暂无数据</div>
+      </div>
     </div>
+
+    
 
     <Transition name="modal-fade">
       <div v-if="showDialog" class="modal-overlay" @click.self="closeDialog">
@@ -101,9 +107,60 @@
               </div>
             </div>
 
+            <!-- 新增：宿舍分配区域 -->
+            <div v-if="currentEdit.status === '待审批'" class="dorm-assign-area">
+              <div class="dorm-assign-header">
+                <label class="block-title">分配目标宿舍</label>
+                <button class="btn-edit-dorm" @click="startEditDorm" v-if="!isEditingDorm">
+                  修改目标宿舍
+                </button>
+              </div>
+
+              <div v-if="isEditingDorm" class="dorm-select-area">
+                <div class="select-group">
+                  <label>选择宿舍楼</label>
+                  <select v-model="selectedBuildingId" class="type-select" @change="onBuildingChange(selectedBuildingId)">
+                    <option :value="null">请选择宿舍楼</option>
+                    <option v-for="build in availableBuildings" :key="build.id" :value="build.id">
+                      {{ build.buildingNumber }} ({{ build.assignedGender }})
+                    </option>
+                  </select>
+                </div>
+
+                <div class="select-group" v-if="selectedBuildingId">
+                  <label>选择目标宿舍</label>
+                  <select v-model="selectedDormId" class="type-select">
+                    <option :value="null">请选择宿舍</option>
+                    <option v-for="dorm in availableDorms" :key="dorm.dormitoryId" :value="dorm.dormitoryId">
+                      {{ dorm.dormitoryNo }} (剩余床位: {{ dorm.availableBeds }})
+                    </option>
+                  </select>
+                </div>
+
+                <div class="dorm-select-buttons">
+                  <button class="btn-cancel" @click="cancelEditDorm">取消</button>
+                  <button class="btn-approve" @click="confirmUpdateDorm">确认</button>
+                </div>
+              </div>
+            </div>
+
             <div class="detail-block">
               <label class="block-title">详细申请理由</label>
               <div class="text-content">{{ currentEdit.reason }}</div>
+            </div>
+
+            <!-- 审批结果区域 -->
+            <div class="detail-block" v-if="currentEdit.status !== '待审批' && currentEdit.comment">
+              <label class="block-title">审批意见</label>
+              <div class="text-content">{{ currentEdit.comment }}</div>
+            </div>
+
+            <div class="detail-block" v-if="currentEdit.status !== '待审批' && currentEdit.approvalTime">
+              <label class="block-title">审批信息</label>
+              <div class="text-content">
+                审批人：{{ currentEdit.approverNo }} | 
+                审批时间：{{ formatDate(currentEdit.approvalTime) }}
+              </div>
             </div>
 
             <div class="approve-action-area" v-if="currentEdit.status === '待审批'">
@@ -127,7 +184,15 @@
 
 <script>
 // 1. 引入 listDorm 接口
-import { getApplicationList, updateApplicationStatus, listDorm } from '@/utils/api.js'
+import {
+    getApplicationList,
+    updateApplicationStatus,
+    listDorm,
+    getAdminAvailableDorms,
+    getAdminAvailableBuildings,
+    updateApplicationTargetDorm,
+    getApplicationById
+} from '@/utils/api.js'
 import { ElMessage } from 'element-plus'
 
 export default {
@@ -140,7 +205,12 @@ export default {
       filterStatus: '全部',
       showDialog: false,
       currentEdit: {},
-      approveComment: ''
+      approveComment: '',
+      availableBuildings: [],
+      availableDorms: [],
+      selectedBuildingId: null,
+      selectedDormId: null,
+      isEditingDorm: false
     }
   },
   computed: {
@@ -187,6 +257,85 @@ export default {
       // 否则从映射表中取房号，取不到则返回原 ID
       return this.dormMap[id] || `ID:${id}`
     },
+    
+    // 获取可用宿舍楼
+    async fetchAvailableBuildings() {
+      try {
+        if (!this.currentEdit.studentNo) {
+          console.error('学生学号为空:', this.currentEdit)
+          return
+        }
+        console.log('开始获取宿舍楼,学生学号:', this.currentEdit.studentNo)
+        const res = await getAdminAvailableBuildings(this.currentEdit.studentNo)
+        console.log('获取宿舍楼结果:', res)
+        if (res.data.code === 1) {
+          this.availableBuildings = res.data.data
+          console.log('可用宿舍楼:', this.availableBuildings)
+        } else {
+          console.error('获取宿舍楼失败:', res.data.msg)
+        }
+      } catch (e) {
+        console.error('获取宿舍楼失败', e)
+      }
+    },
+
+    // 获取可用宿舍
+    async fetchAvailableDorms(buildingId) {
+      try {
+        console.log('开始获取宿舍,楼栋ID:', buildingId)
+        const res = await getAdminAvailableDorms(buildingId)
+        console.log('获取宿舍结果:', res)
+        if (res.data.code === 1) {
+          this.availableDorms = res.data.data
+          console.log('可用宿舍:', this.availableDorms)
+        } else {
+          console.error('获取宿舍失败:', res.data.msg)
+        }
+      } catch (e) {
+        console.error('获取可用宿舍失败', e)
+      }
+    },
+
+    // 宿舍楼变化
+    onBuildingChange(buildingId) {
+      this.selectedDormId = null
+      this.fetchAvailableDorms(buildingId)
+    },
+
+    // 开始编辑宿舍
+    startEditDorm() {
+      this.isEditingDorm = true
+      this.fetchAvailableBuildings()
+    },
+
+    // 确认修改宿舍
+    async confirmUpdateDorm() {
+      if (!this.selectedDormId) {
+        ElMessage.warning('请选择目标宿舍')
+        return
+      }
+      try {
+        const res = await updateApplicationTargetDorm(
+            this.currentEdit.applicationId,
+            this.selectedDormId
+        )
+        if (res.data.code === 1) {
+          ElMessage.success('目标宿舍更新成功')
+          this.currentEdit.targetDormitoryId = this.selectedDormId
+          this.isEditingDorm = false
+          this.loadData()
+        }
+      } catch (e) {
+        ElMessage.error('更新目标宿舍失败')
+      }
+    },
+
+    // 取消编辑宿舍
+    cancelEditDorm() {
+      this.isEditingDorm = false
+      this.selectedBuildingId = null
+      this.selectedDormId = null
+    },
     // 在 methods 中添加或修改
     formatStatus(status) {
       const statusMap = {
@@ -218,6 +367,18 @@ export default {
       this.currentEdit = { ...item }
       this.approveComment = ''
       this.showDialog = true
+      this.fetchApplicationDetail(item.applicationId)
+    },
+
+    async fetchApplicationDetail(applicationId) {
+      try {
+        const res = await getApplicationById(applicationId)
+        if (res.data.code === 1 && res.data.data) {
+          this.currentEdit = { ...this.currentEdit, ...res.data.data }
+        }
+      } catch (e) {
+        console.error('获取申请详情失败', e)
+      }
     },
 
     async submitStatus(targetStatus) {
@@ -305,11 +466,30 @@ export default {
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  color: #94a3b8;
+  font-size: 16px;
 }
 
 .admin-table th {
@@ -633,6 +813,100 @@ export default {
 
 .action-cells .btn-text:hover {
   background: #eff6ff;
+}
+
+/* 版本弹窗样式 */
+.version-modal {
+  max-width: 450px;
+}
+
+.version-content {
+  text-align: center;
+}
+
+.version-content h4 {
+  font-size: 18px;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.version-date {
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0 0 20px 0;
+}
+
+.version-changes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.version-changes li {
+  padding: 8px 12px;
+  background: #f8fafc;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
+}
+
+.version-changes li:last-child {
+  margin-bottom: 0;
+}
+
+/* 宿舍分配区域样式 */
+.dorm-assign-area {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.dorm-assign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.btn-edit-dorm {
+  background: white;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-edit-dorm:hover {
+  background: #eff6ff;
+}
+
+.dorm-select-area {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}
+
+.select-group {
+  margin-bottom: 12px;
+}
+
+.select-group label {
+  display: block;
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.dorm-select-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 /* 动画 */

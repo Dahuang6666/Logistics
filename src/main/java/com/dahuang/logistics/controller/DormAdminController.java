@@ -6,7 +6,6 @@ import com.dahuang.logistics.entity.AnnouncementType;
 import com.dahuang.logistics.entity.DormChangeApplication;
 import com.dahuang.logistics.entity.Result;
 import com.dahuang.logistics.service.DormAdminService;
-import com.dahuang.logistics.utils.AIAnnouncementService;
 import com.dahuang.logistics.vo.DormChangeApplicationVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,6 +151,35 @@ public class DormAdminController {
             return Result.error("未找到该宿舍信息");
         }
         return Result.success(dormitoryNo);
+    }
+
+    //获取可用宿舍列表(有剩余床位且状态正常)
+    @GetMapping("/getAvailableDorms")
+    public Result getAvailableDorms(@RequestParam(required = false) Integer buildingId) {
+        return Result.success(dormAdminService.getAvailableDorms(buildingId));
+    }
+
+    //根据学生性别获取可用宿舍楼
+    @GetMapping("/getAvailableBuildingsByGender")
+    public Result getAvailableBuildingsByGender(@RequestParam String studentNo) {
+        return dormAdminService.getAvailableBuildingsByGender(studentNo);
+    }
+
+    // 修改申请的目标宿舍
+    @PostMapping("/updateTargetDorm")
+    public Result updateTargetDorm(@RequestParam Integer applicationId, @RequestParam Integer targetDormId) {
+        boolean success = dormAdminService.updateTargetDorm(applicationId, targetDormId);
+        return success ? Result.success("目标宿舍更新成功") : Result.error("目标宿舍更新失败");
+    }
+
+    // 根据ID获取申请详情
+    @GetMapping("/getApplicationById")
+    public Result getApplicationById(@RequestParam Integer applicationId) {
+        DormChangeApplicationVO vo = dormAdminService.getApplicationById(applicationId);
+        if (vo == null) {
+            return Result.error("未找到该申请");
+        }
+        return Result.success(vo);
     }
 
 }

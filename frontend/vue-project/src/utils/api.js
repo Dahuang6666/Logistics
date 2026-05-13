@@ -522,11 +522,38 @@ export function deleteAnnouncementType(id) {
 }
 
 export function getDormitoryNoById(dormitoryId) {
-  return request.get('/school/dormAdmin/getDormitoryNoById', {
-    params: { dormitoryId }
-  });
+    return request.get("/school/dormAdmin/getDormitoryNoById", {
+        params: { dormitoryId }
+    });
 }
 
+// 管理员获取可用宿舍列表
+export function getAdminAvailableDorms(buildingId) {
+    return request.get("/school/dormAdmin/getAvailableDorms", {
+        params: { buildingId }
+    });
+}
+
+// 管理员根据学生性别获取可用宿舍楼
+export function getAdminAvailableBuildings(studentNo) {
+    return request.get("/school/dormAdmin/getAvailableBuildingsByGender", {
+        params: { studentNo }
+    });
+}
+
+// 管理员更新申请的目标宿舍
+export function updateApplicationTargetDorm(applicationId, targetDormId) {
+    return request.post("/school/dormAdmin/updateTargetDorm", null, {
+        params: { applicationId, targetDormId }
+    });
+}
+
+// 获取申请详情（包含审批意见等）
+export function getApplicationById(applicationId) {
+    return request.get("/school/dormAdmin/getApplicationById", {
+        params: { applicationId }
+    });
+}
 
 
 // 按类型统计公告数量

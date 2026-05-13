@@ -1,5 +1,6 @@
 package com.dahuang.logistics.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -12,5 +13,10 @@ public enum ApplicationStatus {
 
     ApplicationStatus(String desc) {
         this.desc = desc;
+    }
+
+    @JsonValue
+    public String getDesc() {
+        return desc;
     }
 }
