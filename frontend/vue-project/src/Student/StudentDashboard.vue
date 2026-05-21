@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <!-- 顶部导航栏 -->
     <div class="header">
-      <div class="logo">🏠 宿舍管理系统</div>
+      <div class="logo">🏠 校寝管理系统</div>
       <div class="user-info">
         <span class="user-name">👤 {{ userName }} | 学生</span>
         <button class="logout-btn" @click="handleLogout">退出</button>

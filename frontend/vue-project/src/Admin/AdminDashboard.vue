@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <div class="header">
-      <div class="logo">🏠 宿舍管理系统</div>
+      <div class="logo">🏠 校寝管理系统</div>
       <div class="user-info">
         <span class="user-name">👤 {{ userName }} | 系统管理员</span>
         <button class="logout-btn" @click="handleLogout">退出</button>
