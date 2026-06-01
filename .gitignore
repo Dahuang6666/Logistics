@@ -39,4 +39,5 @@ apiKey.txt
 application-secret.properties
 
 ### Uploaded images ###
-src/main/resources/static/imgs/
+src/main/resources/static/imgs/*
+!src/main/resources/static/imgs/default.jpg
