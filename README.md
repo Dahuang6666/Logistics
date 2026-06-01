@@ -18,7 +18,7 @@
 - **学生端**：报修申请、换宿申请、投诉建议、公告查看、个人信息
 - **宿管端**：报修处理、换宿审批、反馈回复
 - **系统管理员端**：用户管理、宿舍楼/房间管理、公告管理、数据统计
-- **AI 辅助**：自动生成公告正文、自动识别报修类型与紧急程度
+- **AI 辅助**：自动识别报修类型与紧急程度
 
 ## 快速开始
 
@@ -43,7 +43,7 @@ mysql -u root -p school_backend_manage < school_backend_manage.sql
 
 ### 2. 敏感配置
 
-在 `src/main/resources/` 下创建 `application-secret.properties`（**已 gitignore，不会提交**）：
+在 `src/main/resources/` 下创建 `application-secret.properties`
 
 ```properties
 spring.datasource.password=你的数据库密码
@@ -53,7 +53,7 @@ spring.mail.password=你的QQ邮箱SMTP授权码
 
 ### 3. AI 功能配置
 
-在 `src/main/resources/` 下创建 `apiKey.txt`（**已 gitignore**），写入 DeepSeek API Key：
+在 `src/main/resources/` 下创建 `apiKey.txt`，写入 DeepSeek API Key：
 
 ```
 sk-xxxxxxxxxxxxxxxx
